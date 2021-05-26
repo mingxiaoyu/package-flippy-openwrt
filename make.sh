@@ -65,8 +65,15 @@ if [ -z $OPENWRT_VERSION ];then
 	OPENWRT_VERSION="R21.4.18"
 fi
 if [ -z $KERNEL_VERSION ];then
-    KERNEL_VERSION="5.4.119-flippy-59"
+    KERNEL_VERSION="Latest"
 fi
+
+if [ $KERNEL_VERSION == "Latest" ];then
+	rm -rf Latest
+	wget https://raw.githubusercontent.com/mingxiaoyu/flippy-packages/main/Latest
+	KERNEL_VERSION=$(cat Latest)	
+fi
+
 if [ -z $WHOAMI ];then
     WHOAMI="mingxiaoyu"
 fi

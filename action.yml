@@ -13,7 +13,7 @@ inputs:
   kernel-version:
     description: 'The kernel version'
     required: false
-    default: 5.4.119-flippy-59
+    default: Latest
   whoami:
     description: 'The name of build the openwrt'
     required: false
