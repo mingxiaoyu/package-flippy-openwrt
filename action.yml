@@ -1,0 +1,65 @@
+name: 'Package OpenWrt with flippy script'
+author: 'mingxiaoyu'
+description: 'Use the flippy script package Armvirt as OpenWrt'
+inputs:
+  types:
+    description: 'The type of the drive'
+    required: false
+    default: s905d
+  openwrt-version:
+    description: 'The openwrt version'
+    required: false
+    default: R21.4.18
+  kernel-version:
+    description: 'The kernel version'
+    required: false
+    default: 5.4.119-flippy-59
+  whoami:
+    description: 'The name of build the openwrt'
+    required: false
+    default: mingxiaoyu
+  out:
+    description: 'The output path of the openwrt'
+    required: false
+    default: /out
+  openwrt-path:
+    description: 'The input path of the openwrt'
+    required: false
+  openwrt-url:
+    description: 'The url of the openwrt'
+    required: false
+  sub-name:
+    description: 'add the sub name in file: xxxx-xx-{sub-name}.img.gz'
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        if [ -z "${{ inputs.openwrt-path }}" ] && [ -z "${{ inputs.openwrt-url }}" ]   ; then
+          echo "Both [openwrt-path] and [.openwrt-url] cannot be empty."
+          exit 1
+        fi
+        
+        sudo chmod  -R 777 /opt
+        
+        test -d /opt/kernel || mkdir -p /opt/kernel
+        sudo chmod  -R 777 /opt/kernel
+
+        cd ${GITHUB_ACTION_PATH}
+
+        command=" "
+        
+        [ -n "${{ inputs.types }}" ] && command="${command} -t ${{ inputs.types }}"
+        [ -n "${{ inputs.openwrt-version }}" ] && command="${command} -v ${{ inputs.openwrt-version }}"
+        [ -n "${{ inputs.kernel-version }}" ] && command="${command} -k ${{ inputs.kernel-version }}"
+        [ -n "${{ inputs.whoami }}" ] && command="${command} -w ${{ inputs.whoami }}"
+        [ -n "${{ inputs.out }}" ] && command="${command} -o ${{ inputs.out }}"
+        [ -n "${{ inputs.openwrt-path }}" ] && command="${command} -p ${{ inputs.openwrt-path }}"
+        [ -n "${{ inputs.openwrt-url }}" ] && command="${command} -l ${{ inputs.openwrt-url }}"
+        [ -n "${{ inputs.sub-name }}" ] && command="${command} -s ${{ inputs.sub-name }}"
+        
+        #echo "command:${command}"
+        
+        sudo chmod +x make.sh
+        sudo ./make.sh  ${command}
