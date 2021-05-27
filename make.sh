@@ -137,8 +137,8 @@ get_openwrt(){
 	echo "check file"
 	ls
 	echo "check file end"
-	filename=$(ls | awk -F '.tar.gz' '{print $1}')	
-	sudo mv ${filename}.tar.gz /opt/openwrt/openwrt-armvirt-64-default-rootfs.tar.gz
+	filename=` find -name '*.tar.gz' `
+	sudo mv ${filename} /opt/openwrt/openwrt-armvirt-64-default-rootfs.tar.gz
 }
 
 package_openwrt(){
