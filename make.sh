@@ -134,7 +134,9 @@ get_openwrt_from_url(){
 get_openwrt(){
 
 	cd ${OPENWRT_PATH}
-
+	echo "check file"
+	ls
+	echo "check file end"
 	filename=$(ls | awk -F '.tar.gz' '{print $1}')	
 	sudo mv ${filename}.tar.gz /opt/openwrt/openwrt-armvirt-64-default-rootfs.tar.gz
 }
