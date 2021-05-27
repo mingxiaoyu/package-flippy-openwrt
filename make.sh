@@ -109,7 +109,7 @@ create_makeenv(){
 cat > make.env <<EOF
 WHOAMI="${WHOAMI}"
 OPENWRT_VER="${OPENWRT_VERSION}"
-KERNEL_VERSION="${KERNEL_VERSION}+o"
+KERNEL_VERSION="${KERNEL_VERSION}"
 KERNEL_PKG_HOME="/opt/kernel"
 SFE_FLAG=0
 FLOWOFFLOAD_FLAG=1
@@ -117,7 +117,8 @@ EOF
 }
 
 get_kernel(){
-	svn co ${KERNEL_URL}/${KERNEL_VERSION}/kernel
+	KERNEL_Folder_Name=$(echo ${KERNEL_VERSION/+o/-o})
+	svn co ${KERNEL_URL}/${KERNEL_Folder_Name}/kernel
 	cp -r kernel/* /opt/kernel
 }
 
