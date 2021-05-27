@@ -132,11 +132,11 @@ get_openwrt_from_url(){
 }
 
 get_openwrt(){
-	cp -r  ${OPENWRT_PATH} /opt/openwrt/
-	
-	cd /opt/openwrt/
+
+	cd ${OPENWRT_PATH}
+
 	filename=$(ls | awk -F '.tar.gz' '{print $1}')	
-	sudo mv ${filename}.tar.gz openwrt-armvirt-64-default-rootfs.tar.gz
+	sudo mv ${filename}.tar.gz /opt/openwrt/openwrt-armvirt-64-default-rootfs.tar.gz
 }
 
 package_openwrt(){
