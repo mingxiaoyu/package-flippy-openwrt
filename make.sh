@@ -132,6 +132,10 @@ get_openwrt_from_url(){
 
 get_openwrt(){
 	cp -r  ${OPENWRT_PATH} /opt/openwrt/
+	
+	cd /opt/openwrt/
+	filename=$(ls | awk -F '.tar.gz' '{print $1}')	
+	sudo mv ${filename}.tar.gz openwrt-armvirt-64-default-rootfs.tar.gz
 }
 
 package_openwrt(){
@@ -169,6 +173,8 @@ zip_opwnwrt(){
 
 move_to_out(){
 	test -d ${OUT} || sudo mkdir -p ${OUT}
+	
+	cd  /opt/openwrt/tmp
 	if [ -n "$SUB_NAME" ]; then
 		for name in `ls *.img.gz`;do sudo mv $name ${name%.img.gz}-${SUB_NAME}.img.gz;done
 	fi
