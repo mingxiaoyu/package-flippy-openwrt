@@ -62,7 +62,7 @@ jobs:
         types: s905d
         out: ${{ env.UPLOAD }}
         sub-name: path
-        openwrt-path: ${{ env.GITHUB_WORKSPACE }}/openwrt
+        openwrt-path: openwrt
  
     - name: check
       run: |
