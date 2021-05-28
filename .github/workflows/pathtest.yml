@@ -2,7 +2,10 @@ name: openwrt path test
 
 on:
   workflow_dispatch:
-      
+
+env:
+  URL: https://github.com/mingxiaoyu/N1Openwrt/releases/download/2021052718/openwrt-armvirt-64-default-rootfs-mini.tar.gz
+
 jobs:
   build:
     runs-on: ubuntu-18.04
@@ -18,8 +21,8 @@ jobs:
         sudo mkdir openwrt
         sudo chown $USER:$GROUPS openwrt
         cd openwrt
-        wget https://github.com/mingxiaoyu/N1Openwrt/releases/download/2021052718/openwrt-armvirt-64-default-rootfs-mini.tar.gz -O test.tar.gz
-        wget https://github.com/mingxiaoyu/N1Openwrt/releases/download/2021052718/update-amlogic-openwrt.sh
+        wget ${URL} -O test.tar.gz
+        sudo cat "test" > update-amlogic-openwrt.sh
 
         sudo mkdir -p /upload
         sudo chown $USER:$GROUPS /upload
@@ -45,16 +48,29 @@ jobs:
         
     - name: Package OpenWrt with flippy script
       uses: mingxiaoyu/package-flippy-openwrt@dev
-      id: package
+      id: package-path
       with:
         types: s905d
         out: ${{ env.UPLOAD }}
-        openwrt-path: openwrt
+        sub-name: path
+        openwrt-path: ${{ env.GITHUB_WORKSPACE }}/openwrt
+
+    - name: Package OpenWrt with flippy script
+      uses: mingxiaoyu/package-flippy-openwrt@dev
+      id: package-url
+      with:
+        types: s905d
+        out: ${{ env.UPLOAD }}
+        sub-name: url
+        openwrt-url: ${{ env.URL }}
         
     - name: check
       run: |
-        echo "out:${{ steps.package.outputs.out }}"
-        echo "status:${{ steps.package.outputs.status }}"
+        echo "path-out:${{ steps.package-path.outputs.out }}"
+        echo "path-status:${{ steps.package-path.outputs.status }}"
+        
+        echo "url-out:${{ steps.package-url.outputs.out }}"
+        echo "url-status:${{ steps.package-url.outputs.status }}"
         
     - name: Upload
       uses: actions/upload-artifact@master
