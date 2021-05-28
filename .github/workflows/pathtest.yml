@@ -47,6 +47,24 @@ jobs:
         echo "current:${PWD}"
         ls
 
+    - name: Package OpenWrt with flippy script by Path
+      uses: mingxiaoyu/package-flippy-openwrt@dev
+      id: package-path
+      with:
+        types: s905d
+        out: ${{ env.UPLOAD }}
+        sub-name: path
+        openwrt-path: $GITHUB_WORKSPACE/openwrt
+
+    - name: Package OpenWrt with flippy script by Path
+      uses: mingxiaoyu/package-flippy-openwrt@dev
+      id: package-path2
+      with:
+        types: s905d
+        out: ${{ env.UPLOAD }}
+        sub-name: path2
+        openwrt-path: openwrt
+        
     - name: Package OpenWrt with flippy script by URL
       uses: mingxiaoyu/package-flippy-openwrt@dev
       id: package-url
@@ -56,15 +74,6 @@ jobs:
         sub-name: url
         openwrt-url: ${{ env.URL }}
         
-    - name: Package OpenWrt with flippy script by Path
-      uses: mingxiaoyu/package-flippy-openwrt@dev
-      id: package-path
-      with:
-        types: s905d
-        out: ${{ env.UPLOAD }}
-        sub-name: path
-        openwrt-path: openwrt
- 
     - name: check
       run: |
         echo "path-out:${{ steps.package-path.outputs.out }}"
