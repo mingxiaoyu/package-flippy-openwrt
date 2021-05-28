@@ -1,3 +1,5 @@
+name: openwrt path test
+
 on:
   workflow_dispatch:
       
