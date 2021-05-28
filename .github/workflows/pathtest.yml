@@ -1,4 +1,4 @@
-name: openwrt path test
+name: package test
 
 on:
   workflow_dispatch:
@@ -45,17 +45,8 @@ jobs:
       run: |
         cd openwrt
         ls
-        
-    - name: Package OpenWrt with flippy script
-      uses: mingxiaoyu/package-flippy-openwrt@dev
-      id: package-path
-      with:
-        types: s905d
-        out: ${{ env.UPLOAD }}
-        sub-name: path
-        openwrt-path: ${{ env.GITHUB_WORKSPACE }}/openwrt
 
-    - name: Package OpenWrt with flippy script
+    - name: Package OpenWrt with flippy script by URL
       uses: mingxiaoyu/package-flippy-openwrt@dev
       id: package-url
       with:
@@ -64,6 +55,15 @@ jobs:
         sub-name: url
         openwrt-url: ${{ env.URL }}
         
+    - name: Package OpenWrt with flippy script by Path
+      uses: mingxiaoyu/package-flippy-openwrt@dev
+      id: package-path
+      with:
+        types: s905d
+        out: ${{ env.UPLOAD }}
+        sub-name: path
+        openwrt-path: ${{ env.GITHUB_WORKSPACE }}/openwrt
+ 
     - name: check
       run: |
         echo "path-out:${{ steps.package-path.outputs.out }}"
