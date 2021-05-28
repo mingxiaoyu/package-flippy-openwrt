@@ -44,6 +44,7 @@ jobs:
     - name: check1
       run: |
         cd openwrt
+        echo "current:${PWD}"
         ls
 
     - name: Package OpenWrt with flippy script by URL
