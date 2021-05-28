@@ -6,6 +6,9 @@
 # Author: mingxiaoyu
 #=====================================================================================
 
+WORK_DIR="${PWD}"
+KERNEL_URL="https://github.com/mingxiaoyu/flippy-packages/trunk"
+
 # from https://blog.csdn.net/czyt1988/article/details/79110450
 ARGS=`getopt -o t:k:v:w:p:o:l:s: --long types:,kernel:,openwrt:,whoami:,path:,out:,url:sub -- "$@"`
 
@@ -81,17 +84,16 @@ fi
 if [ -z $OUT ];then
     OUT="/out"
 fi
+echo -e "\033[32m CURRENT PATH:${WORK_DIR}\033[0m"
+echo -e "\033[32m TYPES:${TYPES}\033[0m"
+echo -e "\033[32m OPENWRT_VERSION:${OPENWRT_VERSION}\033[0m"
+echo -e "\033[32m KERNEL_VERSION:${KERNEL_VERSION}\033[0m"
+echo -e "\033[32m WHOAMI:${WHOAMI}\033[0m"
+echo -e "\033[32m OUT:${OUT}\033[0m"
+echo -e "\033[32m OPENWRT PATH:${OPENWRT_PATH}\033[0m"
+echo -e "\033[32m OPENWRT URL:${OPENWRT_URL}\033[0m"
+echo -e "\033[32m SUB NAME:${SUB_NAME}\033[0m"
 
-echo "TYPES:${TYPES}"
-echo "OPENWRT_VERSION:${OPENWRT_VERSION}"
-echo "KERNEL_VERSION:${KERNEL_VERSION}"
-echo "WHOAMI:${WHOAMI}"
-echo "OUT:${OUT}"
-echo "OPENWRT_PATH:${OPENWRT_PATH}"
-echo "OPENWRT_URL:${OPENWRT_URL}"
-echo "SUB_NAME:${SUB_NAME}"
-
-KERNEL_URL="https://github.com/mingxiaoyu/flippy-packages/trunk"
 
 SCRIPT_VPLUS_FILE="mk_h6_vplus.sh"
 SCRIPT_BEIKEYUN_FILE="mk_rk3328_beikeyun.sh"
@@ -117,13 +119,13 @@ EOF
 }
 
 get_kernel(){
-	KERNEL_Folder_Name=$(echo ${KERNEL_VERSION/+o/-o})
-	svn co ${KERNEL_URL}/${KERNEL_Folder_Name}/kernel
+	KERNEL_FOLDER_NAME=$(echo ${KERNEL_VERSION/+o/-o})
+	svn co ${KERNEL_URL}/${KERNEL_FOLDER_NAME}/kernel  >/dev/null 2>&1
 	cp -r kernel/* /opt/kernel
 }
 
 get_packefile(){
-	svn co ${KERNEL_URL}/opt
+	svn co ${KERNEL_URL}/opt  >/dev/null 2>&1
 	cp -r opt/* /opt
 }
 
@@ -134,17 +136,25 @@ get_openwrt_from_url(){
 get_openwrt(){
 
 	cd ${OPENWRT_PATH}
-	echo "check file"
-	ls
-	echo "check file end"
 	filename=` find -name '*.tar.gz' `
-	sudo mv ${filename} /opt/openwrt/openwrt-armvirt-64-default-rootfs.tar.gz
+	echo -e "\033[32m  openwrt:${filename}\033[0m"
+	
+	count=` find -name '*.tar.gz' | wc -l `
+	if [  $count -ne 1 ] ; then
+		ls
+		echo -e "\033[31m there are duplicate of tar.gz \033[0m" 
+		exit 1
+	fi
+	cp ${filename} /opt/openwrt/openwrt-armvirt-64-default-rootfs.tar.gz
+	
+	cd ${WORK_DIR}
 }
 
 package_openwrt(){
 	sudo chmod  -R 777 /opt
 	
 	cd /opt/openwrt
+	
 	
 	typearr=(${TYPES//,/ })  
 
@@ -164,7 +174,7 @@ package_openwrt(){
 				*) ${WARNING} "Have no this SoC. Skipped."
 				 continue ;;
 			esac
-			echo "The openwrt packaging of ${type} has been completed."
+			echo -e "\033[32m The openwrt packaging of ${type} has been completed.\033[0m"
 	   }
 	done 
 	
@@ -177,30 +187,39 @@ zip_opwnwrt(){
 move_to_out(){
 	test -d ${OUT} || sudo mkdir -p ${OUT}
 	
+	sudo chmod  -R 777 ${OUT}
+	
 	cd  /opt/openwrt/tmp
 	if [ -n "$SUB_NAME" ]; then
 		for name in `ls *.img.gz`;do sudo mv $name ${name%.img.gz}-${SUB_NAME}.img.gz;done
 	fi
-	sudo mv -f  /opt/openwrt/tmp/*.img.gz ${OUT}/
-	sudo cp /opt/openwrt/files/update-amlogic-openwrt.sh ${OUT}/update-amlogic-openwrt.sh
+	mv -f  /opt/openwrt/tmp/*.img.gz ${OUT}/
+	cp /opt/openwrt/files/update-amlogic-openwrt.sh ${OUT}/update-amlogic-openwrt.sh
 	
 	cd ${OUT}
+	echo "${PWD}" > /opt/outpath
 	ls
 }
+
+clearfiles(){
+	sudo rm -rf /opt/openwrt
+	sudo rm -rf /opt/kernel
+}
+
+if [ -n "$OPENWRT_PATH" ];then
+	echo -e "\033[32m start to copy openwrt from path. \033[0m"
+	get_openwrt
+elif  [ -n "$OPENWRT_URL" ];then 
+	echo -e "\033[32m start to download openwrt from url. \033[0m"
+	get_openwrt_from_url
+fi
 
 get_kernel
 get_packefile
 create_makeenv
 
-if [ -n "$OPENWRT_PATH" ];then
-	echo "start to get openwrt from path"
-	get_openwrt
-elif  [ -n "$OPENWRT_URL" ];then 
-	echo "start to get openwrt from url"
-	get_openwrt_from_url
-fi
-
 package_openwrt
 zip_opwnwrt
 move_to_out
-echo "done"
+clearfiles
+echo -e "\033[32m done. \033[0m"
