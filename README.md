@@ -2,19 +2,24 @@
 
 # Parameters
 
-| Inputs | Description | Value |
-| --- | --- | --- |
-| types           | he type of the drive |   plus,beikeyun,l1pro,s905,s905d,s905x2,s905x3,s912,s922x  default is s905d |
-| openwrt-version | The openwrt version  |  default is R21.4.18                                                        |
-|kernel-version| The kernel version | default is Latest |
-|whoami|  The name of build the openwrt | default is mingxiaoyu|
-|out| The output path of the openwrt  | default is /out |
-|openwrt-path| The input path of the openwrt |   default is null. openwrt-path or openwrt-url should have one.  |
-|openwrt-url| The url of the openwrt|  default is null. openwrt-path or openwrt-url should have one.  |
-|sub-name |  add the sub name in file: xxxx-xx-{sub-name}.img.gz| default is null |
+| Inputs | Type |Description | Value |
+| --- | --- | --- |--- |
+| types           | String | The type of the drive |   Default is s905d.  Multi version compilation: s905d,s905x2.        |
+| openwrt-version | String | The openwrt version  |  Default is R21.4.18    |
+|kernel-version| String | The kernel version | Default is Latest |
+|whoami|  String | The name of build the openwrt | Default is mingxiaoyu|
+|out| String | The output path of the openwrt  | Default is /out |
+|openwrt-path| String | The input path of the openwrt |   Default is null. openwrt-path or openwrt-url should have one.  |
+|openwrt-url| String | The url of the openwrt|  Default is null. openwrt-path or openwrt-url should have one.  |
+|sub-name |  String | add the sub name in file: xxxx-xx-{sub-name}.img.gz| Default is null |
     
- kernel-version check in [flippy-packages](https://github.com/mingxiaoyu/flippy-packages)
-
+ kernel-version check in [flippy-packages](https://github.com/mingxiaoyu/flippy-packages)   
+ types: plus,beikeyun,l1pro,s905,s905d,s905x2,s905x3,s912,s922x.
+ 
+| OutPuts | Type | Description | Value |
+| --- | --- | --- | --- |
+| out | String | The output path of the openwrt | Output absolute path |
+| status | boolean | The status of action | true or false |
 
 # Usage the aciton
 ```
