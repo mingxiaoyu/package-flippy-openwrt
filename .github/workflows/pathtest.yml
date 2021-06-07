@@ -54,7 +54,7 @@ jobs:
         types: s905d
         out: ${{ env.UPLOAD }}
         sub-name: path
-        openwrt-path: ${{ GITHUB_WORKSPACE }}/openwrt
+        openwrt-path: $GITHUB_WORKSPACE/openwrt
 
     - name: Package OpenWrt with flippy script by Path
       uses: mingxiaoyu/package-flippy-openwrt@dev
