@@ -1,0 +1,33 @@
+{
+  "name": "package-flippy-openwrt",
+  "version": "1.0.0",
+  "description": "package Openwrt with flippy scrtipt",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "release": "ncc build src/index.ts && git add -f dist/",
+    "format": "prettier --write **/*.ts",
+    "format-check": "prettier --check **/*.ts",
+    "lint": "eslint **/*.ts",
+    "test": "jest --testTimeout 10000"
+  },
+  "author": "mingxiaoyu",
+  "license": "Apache License V2",
+  "dependencies": {
+    "@actions/core": "^1.3.0",
+    "@actions/exec": "^1.0.4",
+    "@actions/glob": "^0.1.2",
+    "@actions/io": "^1.1.0",
+    "axios": "^0.21.1",
+    "https-proxy-agent": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.6.1",
+    "@zeit/ncc": "^0.22.3",
+    "jest": "^27.0.3",
+    "jest-mock-extended": "^1.0.15",
+    "ts-jest": "^27.0.2",
+    "typescript": "^4.3.2"
+  }
+}
