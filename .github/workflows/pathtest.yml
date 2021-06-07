@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  URL: https://github.com/mingxiaoyu/N1Openwrt/releases/download/2021052718/openwrt-armvirt-64-default-rootfs-mini.tar.gz
+  URL: https://github.com/mingxiaoyu/N1Openwrt/releases/latest/download/openwrt-armvirt-64-default-rootfs-mini.tar.gz
 
 jobs:
   build:
