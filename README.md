@@ -5,8 +5,8 @@
 | Inputs | Type |Description | Value |
 | --- | --- | --- |--- |
 | types           | String | The type of the drive |   Default is s905d.  Multi version compilation: s905d,s905x2.        |
-| openwrt-version | String | The openwrt version  |  Default is R21.4.18    |
-|kernel-version| String | The kernel version | Default is Latest |
+| openwrt-version | String | The openwrt version  |  Default null   |
+|kernel-version| String | The kernel version | Default is Latest. Latest is the latest of +o.  latest+ is the latest of + |
 |whoami|  String | The name of build the openwrt | Default is mingxiaoyu|
 |out| String | The output path of the openwrt  | Default is /out |
 |openwrt-path| String | The input path of the openwrt |   Default is null. openwrt-path or openwrt-url should have one.  |
@@ -18,21 +18,20 @@
  
 | OutPuts | Type | Description | Value |
 | --- | --- | --- | --- |
-| out | String | The output path of the openwrt | Output absolute path |
 | status | boolean | The status of action | true or false |
 
 # Usage the aciton
 ```
  name: Package OpenWrt with flippy script
   # You may pin to the exact commit or the version.
-  uses: mingxiaoyu/package-flippy-openwrt@v1.0
+  uses: mingxiaoyu/package-flippy-openwrt@main
   with:
     # The type of the drive
     types: # optional, default is s905d
     # The openwrt version
-    openwrt-version: # optional, default is R21.4.18
+    openwrt-version: # optional
     # The kernel version
-    kernel-version: # optional, default is 5.4.119-flippy-59
+    kernel-version: # optional, Latest
     # The name of build the openwrt
     whoami: # optional, default is mingxiaoyu
     # The output path of the openwrt
