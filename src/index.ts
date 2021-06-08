@@ -3,9 +3,12 @@ import * as io from '@actions/io';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as util from './util';
+
 import { DRIVERS_DICT, KERNEL_PATH, MAKEENV_FILE_NAME, OPENWRT_PACKAGE_TMP, OPENWRT_SCRIPT_PATH, UPDATE_FILE_NAME, UPDATE_FILE_PAHT } from "./constants";
 import { getPackageOptions } from "./PackageOptions";
 import { create_make_env, getFolders, getKernel, getKernels, getOpenWrtFromFolder, getOpenWrtFromUrl, getOpenwrtver, getPakcageScript, getPakcageScriptFromFlippy } from "./setup-files";
+
+
 
 async function movefile(distPath: string) {
     await exec.exec(`sudo mkdir -p ${distPath}`);
@@ -36,7 +39,7 @@ async function run() {
         packageOptions.kernel_version = Kernels.Latest;
     }
     if (!Kernels.Item.includes(packageOptions.kernel_version)) {
-        throw new Error(`${packageOptions.kernel_version} is not correct`);
+        core.setFailed(`${packageOptions.kernel_version} is not correct`);
     }
 
     await getKernel(packageOptions.kernel_version);
@@ -54,7 +57,7 @@ async function run() {
         }
     }
 
-    console.log(packageOptions);
+    util.info(JSON.stringify(packageOptions));
 
     await create_make_env(packageOptions, path.join(OPENWRT_SCRIPT_PATH, MAKEENV_FILE_NAME));
     if (!util.isNull(packageOptions.openwrt_path)) {
@@ -62,13 +65,26 @@ async function run() {
     } else {
         await getOpenWrtFromUrl(packageOptions.openwrt_url);
     }
-
+    util.debug("packaging....")
     let devices = packageOptions.devices.split(',');
     await Promise.all(devices.map(async item => {
         let command = await getPackageCommand(item);
+        util.debug(`command:${command} cwd: ${OPENWRT_SCRIPT_PATH}`);
         await exec.exec(`sudo ./${command}`, [], { cwd: OPENWRT_SCRIPT_PATH });
-    }));
 
+        let files = await util.getFiles(`${OPENWRT_PACKAGE_TMP}/*.img`);
+        util.debug(`The img count:${files.length}`)
+        if (files.length > 0) {
+            await Promise.all(files.map(async item => {
+                await exec.exec(`sudo gzip ${item}`);
+                let basename = path.basename(item).replace('.img', '');
+                if (!util.isNull(packageOptions.sub_name)) {
+                    await io.mv(`${item}.gz`, path.join(OPENWRT_PACKAGE_TMP, `${basename}-${packageOptions.sub_name}.img.gz`));
+                }
+            }));
+        }
+    }));
+    util.debug("packaged.")
     await movefile(packageOptions.out);
     await clear();
     core.setOutput("status", true);

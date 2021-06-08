@@ -42,6 +42,8 @@ module.exports =
 /******/ 		// Load entry module and return exports
 /******/ 		return __webpack_require__(325);
 /******/ 	};
+/******/ 	// initialize runtime
+/******/ 	runtime(__webpack_require__);
 /******/
 /******/ 	// run startup
 /******/ 	return startup();
@@ -1004,7 +1006,7 @@ exports.getPackageOptions = void 0;
 var core = __importStar(__webpack_require__(470));
 var util = __importStar(__webpack_require__(322));
 function getPackageOptions() {
-    var devices = core.getInput("types");
+    var devices = core.getInput("types", { required: true });
     var openwrt_version = core.getInput("openwrt-version");
     var kernel_version = core.getInput("kernel-version");
     var whoami = core.getInput("whoami");
@@ -1013,7 +1015,7 @@ function getPackageOptions() {
     var openwrt_url = core.getInput("openwrt-url");
     var sub_name = core.getInput("sub-name");
     if (util.isNull(openwrt_path) && util.isNull(openwrt_url)) {
-        throw new Error("Both [openwrt-path] and [.openwrt-url] cannot be empty.");
+        core.setFailed("Both [openwrt-path] and [.openwrt-url] cannot be empty.");
     }
     return {
         devices: devices,
@@ -3816,7 +3818,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOpenWrtFilePaths = exports.fileExist = exports.download = exports.get = exports.copy = exports.splitLines = exports.writeFile = exports.readFile = exports.isNull = exports.getBooleanInput = void 0;
+exports.getOpenWrtFilePaths = exports.getFiles = exports.fileExist = exports.download = exports.get = exports.copy = exports.warning = exports.info = exports.debug = exports.splitLines = exports.writeFile = exports.readFile = exports.isNull = exports.getBooleanInput = void 0;
 var core = __importStar(__webpack_require__(470));
 var fs = __importStar(__webpack_require__(747));
 var https = __importStar(__webpack_require__(211));
@@ -3824,6 +3826,7 @@ var path = __importStar(__webpack_require__(622));
 var glob = __importStar(__webpack_require__(281));
 var io = __importStar(__webpack_require__(1));
 var axios = __importStar(__webpack_require__(53));
+var styles = __importStar(__webpack_require__(663));
 function getBooleanInput(inputName, defaultValue) {
     if (defaultValue === void 0) { defaultValue = false; }
     return (core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE';
@@ -3870,6 +3873,18 @@ function splitLines(t) {
     return t.split(/\r\n|\r|\n/);
 }
 exports.splitLines = splitLines;
+function debug(message) {
+    core.debug(styles.default.yellow.open + " " + message + " " + styles.default.yellow.close + "}");
+}
+exports.debug = debug;
+function info(message) {
+    core.info(styles.default.green.open + " " + message + " " + styles.default.green.close + "}");
+}
+exports.info = info;
+function warning(message) {
+    core.info(styles.default.red.open + " " + message + " " + styles.default.red.close + "}");
+}
+exports.warning = warning;
 function copy(source, dest) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -3880,7 +3895,9 @@ function copy(source, dest) {
                 case 1:
                     _a.sent();
                     return [3 /*break*/, 3];
-                case 2: throw Error(source + " is not exists.");
+                case 2:
+                    core.setFailed(source + " is not exists.");
+                    _a.label = 3;
                 case 3: return [2 /*return*/];
             }
         });
@@ -3912,36 +3929,28 @@ function get(url) {
 exports.get = get;
 function download(fileUrl, filePath) {
     return __awaiter(this, void 0, void 0, function () {
+        var response;
         return __generator(this, function (_a) {
-            return [2 /*return*/, new Promise(function (resolve, reject) {
-                    var file = fs.createWriteStream(filePath);
-                    var fileInfo = null;
-                    var url = __webpack_require__(835);
-                    // var HttpsProxyAgent = require('https-proxy-agent');
-                    var options = url.parse(fileUrl);
-                    // var proxy = '';
-                    // var agent = new HttpsProxyAgent(proxy);
-                    // options.agent = agent;
-                    var request = https.get(options, function (response) {
-                        if (response.statusCode !== 200) {
-                            reject(new Error("Failed to get '" + options.toString() + "' (" + response.statusCode + ")"));
-                            return;
-                        }
-                        fileInfo = {
-                            mime: response.headers['content-type'],
-                            size: parseInt(String(response.headers['content-length']), 10),
-                        };
-                        response.pipe(file);
-                    });
-                    file.on('finish', function () { return resolve(fileInfo); });
-                    request.on('error', function (err) {
-                        fs.unlink(filePath, function () { return reject(err); });
-                    });
-                    file.on('error', function (err) {
-                        fs.unlink(filePath, function () { return reject(err); });
-                    });
-                    request.end();
-                })];
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, axios.default({
+                        method: 'GET',
+                        url: fileUrl,
+                        responseType: 'stream'
+                    })];
+                case 1:
+                    response = _a.sent();
+                    // pipe the result stream into a file on disc
+                    response.data.pipe(fs.createWriteStream(filePath));
+                    // return a promise and resolve when download finishes
+                    return [2 /*return*/, new Promise(function (resolve, reject) {
+                            response.data.on('end', function () {
+                                resolve();
+                            });
+                            response.data.on('error', function () {
+                                reject();
+                            });
+                        })];
+            }
         });
     });
 }
@@ -3966,23 +3975,40 @@ function fileExist(path) {
     });
 }
 exports.fileExist = fileExist;
-function getOpenWrtFilePaths(searchPath) {
+function getFiles(patterns) {
     return __awaiter(this, void 0, void 0, function () {
-        var patterns, globber, files;
+        var globber, files;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    patterns = path.join(searchPath, '*.tar.gz');
-                    console.log(patterns);
-                    return [4 /*yield*/, glob.create(patterns, getDefaultGlobOptions())];
+                case 0: return [4 /*yield*/, glob.create(patterns, getDefaultGlobOptions())];
                 case 1:
                     globber = _a.sent();
                     return [4 /*yield*/, globber.glob()];
                 case 2:
                     files = _a.sent();
                     files.forEach(function (item) {
-                        console.log(item);
+                        debug(item);
                     });
+                    return [2 /*return*/, files];
+            }
+        });
+    });
+}
+exports.getFiles = getFiles;
+function getOpenWrtFilePaths(searchPath) {
+    return __awaiter(this, void 0, void 0, function () {
+        var patterns, files;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (searchPath.indexOf('$GITHUB_WORKSPACE') >= 0) {
+                        searchPath = searchPath.replace('$GITHUB_WORKSPACE', process.env.GITHUB_WORKSPACE);
+                    }
+                    patterns = path.join(searchPath, '*.tar.gz');
+                    core.debug(patterns);
+                    return [4 /*yield*/, getFiles(patterns)];
+                case 1:
+                    files = _a.sent();
                     return [2 /*return*/, files];
             }
         });
@@ -4127,7 +4153,7 @@ function run() {
                         packageOptions.kernel_version = Kernels.Latest;
                     }
                     if (!Kernels.Item.includes(packageOptions.kernel_version)) {
-                        throw new Error(packageOptions.kernel_version + " is not correct");
+                        core.setFailed(packageOptions.kernel_version + " is not correct");
                     }
                     return [4 /*yield*/, setup_files_1.getKernel(packageOptions.kernel_version)];
                 case 2:
@@ -4152,7 +4178,7 @@ function run() {
                     packageOptions.openwrt_version = opv;
                     _a.label = 8;
                 case 8:
-                    console.log(packageOptions);
+                    util.info(JSON.stringify(packageOptions));
                     return [4 /*yield*/, setup_files_1.create_make_env(packageOptions, path.join(constants_1.OPENWRT_SCRIPT_PATH, constants_1.MAKEENV_FILE_NAME))];
                 case 9:
                     _a.sent();
@@ -4166,23 +4192,52 @@ function run() {
                     _a.sent();
                     _a.label = 13;
                 case 13:
+                    util.debug("packaging....");
                     devices = packageOptions.devices.split(',');
                     return [4 /*yield*/, Promise.all(devices.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
-                            var command;
+                            var command, files;
+                            var _this = this;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4 /*yield*/, getPackageCommand(item)];
                                     case 1:
                                         command = _a.sent();
+                                        util.debug("command:" + command + " cwd: " + constants_1.OPENWRT_SCRIPT_PATH);
                                         return [4 /*yield*/, exec.exec("sudo ./" + command, [], { cwd: constants_1.OPENWRT_SCRIPT_PATH })];
                                     case 2:
                                         _a.sent();
-                                        return [2 /*return*/];
+                                        return [4 /*yield*/, util.getFiles(constants_1.OPENWRT_PACKAGE_TMP + "/*.img")];
+                                    case 3:
+                                        files = _a.sent();
+                                        util.debug("The img count:" + files.length);
+                                        if (!(files.length > 0)) return [3 /*break*/, 5];
+                                        return [4 /*yield*/, Promise.all(files.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
+                                                var basename;
+                                                return __generator(this, function (_a) {
+                                                    switch (_a.label) {
+                                                        case 0: return [4 /*yield*/, exec.exec("sudo gzip " + item)];
+                                                        case 1:
+                                                            _a.sent();
+                                                            basename = path.basename(item).replace('.img', '');
+                                                            if (!!util.isNull(packageOptions.sub_name)) return [3 /*break*/, 3];
+                                                            return [4 /*yield*/, io.mv(item + ".gz", path.join(constants_1.OPENWRT_PACKAGE_TMP, basename + "-" + packageOptions.sub_name + ".img.gz"))];
+                                                        case 2:
+                                                            _a.sent();
+                                                            _a.label = 3;
+                                                        case 3: return [2 /*return*/];
+                                                    }
+                                                });
+                                            }); }))];
+                                    case 4:
+                                        _a.sent();
+                                        _a.label = 5;
+                                    case 5: return [2 /*return*/];
                                 }
                             });
                         }); }))];
                 case 14:
                     _a.sent();
+                    util.debug("packaged.");
                     return [4 /*yield*/, movefile(packageOptions.out)];
                 case 15:
                     _a.sent();
@@ -6227,6 +6282,231 @@ module.exports = function parseHeaders(headers) {
 
 /***/ }),
 
+/***/ 663:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const ANSI_BACKGROUND_OFFSET = 10;
+
+const wrapAnsi16 = (offset = 0) => code => `\u001B[${code + offset}m`;
+
+const wrapAnsi256 = (offset = 0) => code => `\u001B[${38 + offset};5;${code}m`;
+
+const wrapAnsi16m = (offset = 0) => (red, green, blue) => `\u001B[${38 + offset};2;${red};${green};${blue}m`;
+
+function assembleStyles() {
+	const codes = new Map();
+	const styles = {
+		modifier: {
+			reset: [0, 0],
+			// 21 isn't widely supported and 22 does the same thing
+			bold: [1, 22],
+			dim: [2, 22],
+			italic: [3, 23],
+			underline: [4, 24],
+			overline: [53, 55],
+			inverse: [7, 27],
+			hidden: [8, 28],
+			strikethrough: [9, 29]
+		},
+		color: {
+			black: [30, 39],
+			red: [31, 39],
+			green: [32, 39],
+			yellow: [33, 39],
+			blue: [34, 39],
+			magenta: [35, 39],
+			cyan: [36, 39],
+			white: [37, 39],
+
+			// Bright color
+			blackBright: [90, 39],
+			redBright: [91, 39],
+			greenBright: [92, 39],
+			yellowBright: [93, 39],
+			blueBright: [94, 39],
+			magentaBright: [95, 39],
+			cyanBright: [96, 39],
+			whiteBright: [97, 39]
+		},
+		bgColor: {
+			bgBlack: [40, 49],
+			bgRed: [41, 49],
+			bgGreen: [42, 49],
+			bgYellow: [43, 49],
+			bgBlue: [44, 49],
+			bgMagenta: [45, 49],
+			bgCyan: [46, 49],
+			bgWhite: [47, 49],
+
+			// Bright color
+			bgBlackBright: [100, 49],
+			bgRedBright: [101, 49],
+			bgGreenBright: [102, 49],
+			bgYellowBright: [103, 49],
+			bgBlueBright: [104, 49],
+			bgMagentaBright: [105, 49],
+			bgCyanBright: [106, 49],
+			bgWhiteBright: [107, 49]
+		}
+	};
+
+	// Alias bright black as gray (and grey)
+	styles.color.gray = styles.color.blackBright;
+	styles.bgColor.bgGray = styles.bgColor.bgBlackBright;
+	styles.color.grey = styles.color.blackBright;
+	styles.bgColor.bgGrey = styles.bgColor.bgBlackBright;
+
+	for (const [groupName, group] of Object.entries(styles)) {
+		for (const [styleName, style] of Object.entries(group)) {
+			styles[styleName] = {
+				open: `\u001B[${style[0]}m`,
+				close: `\u001B[${style[1]}m`
+			};
+
+			group[styleName] = styles[styleName];
+
+			codes.set(style[0], style[1]);
+		}
+
+		Object.defineProperty(styles, groupName, {
+			value: group,
+			enumerable: false
+		});
+	}
+
+	Object.defineProperty(styles, 'codes', {
+		value: codes,
+		enumerable: false
+	});
+
+	styles.color.close = '\u001B[39m';
+	styles.bgColor.close = '\u001B[49m';
+
+	styles.color.ansi = wrapAnsi16();
+	styles.color.ansi256 = wrapAnsi256();
+	styles.color.ansi16m = wrapAnsi16m();
+	styles.bgColor.ansi = wrapAnsi16(ANSI_BACKGROUND_OFFSET);
+	styles.bgColor.ansi256 = wrapAnsi256(ANSI_BACKGROUND_OFFSET);
+	styles.bgColor.ansi16m = wrapAnsi16m(ANSI_BACKGROUND_OFFSET);
+
+	// From https://github.com/Qix-/color-convert/blob/3f0e0d4e92e235796ccb17f6e85c72094a651f49/conversions.js
+	Object.defineProperties(styles, {
+		rgbToAnsi256: {
+			value: (red, green, blue) => {
+				// We use the extended greyscale palette here, with the exception of
+				// black and white. normal palette only has 4 greyscale shades.
+				if (red === green && green === blue) {
+					if (red < 8) {
+						return 16;
+					}
+
+					if (red > 248) {
+						return 231;
+					}
+
+					return Math.round(((red - 8) / 247) * 24) + 232;
+				}
+
+				return 16 +
+					(36 * Math.round(red / 255 * 5)) +
+					(6 * Math.round(green / 255 * 5)) +
+					Math.round(blue / 255 * 5);
+			},
+			enumerable: false
+		},
+		hexToRgb: {
+			value: hex => {
+				const matches = /(?<colorString>[a-f\d]{6}|[a-f\d]{3})/i.exec(hex.toString(16));
+				if (!matches) {
+					return [0, 0, 0];
+				}
+
+				let {colorString} = matches.groups;
+
+				if (colorString.length === 3) {
+					colorString = colorString.split('').map(character => character + character).join('');
+				}
+
+				const integer = Number.parseInt(colorString, 16);
+
+				return [
+					(integer >> 16) & 0xFF,
+					(integer >> 8) & 0xFF,
+					integer & 0xFF
+				];
+			},
+			enumerable: false
+		},
+		hexToAnsi256: {
+			value: hex => styles.rgbToAnsi256(...styles.hexToRgb(hex)),
+			enumerable: false
+		},
+		ansi256ToAnsi: {
+			value: code => {
+				if (code < 8) {
+					return 30 + code;
+				}
+
+				if (code < 16) {
+					return 90 + (code - 8);
+				}
+
+				let red;
+				let green;
+				let blue;
+
+				if (code >= 232) {
+					red = (((code - 232) * 10) + 8) / 255;
+					green = red;
+					blue = red;
+				} else {
+					code -= 16;
+
+					const remainder = code % 36;
+
+					red = Math.floor(code / 36) / 5;
+					green = Math.floor(remainder / 6) / 5;
+					blue = (remainder % 6) / 5;
+				}
+
+				const value = Math.max(red, green, blue) * 2;
+
+				if (value === 0) {
+					return 30;
+				}
+
+				let result = 30 + ((Math.round(blue) << 2) | (Math.round(green) << 1) | Math.round(red));
+
+				if (value === 2) {
+					result += 60;
+				}
+
+				return result;
+			},
+			enumerable: false
+		},
+		rgbToAnsi: {
+			value: (red, green, blue) => styles.ansi256ToAnsi(styles.rgbToAnsi256(red, green, blue)),
+			enumerable: false
+		},
+		hexToAnsi: {
+			value: hex => styles.ansi256ToAnsi(styles.hexToAnsi256(hex)),
+			enumerable: false
+		}
+	});
+
+	return styles;
+}
+
+const ansiStyles = assembleStyles();
+
+/* harmony default export */ __webpack_exports__["default"] = (ansiStyles);
+
+
+/***/ }),
+
 /***/ 669:
 /***/ (function(module) {
 
@@ -7780,6 +8060,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.create_make_env = exports.getOpenwrtver = exports.getOpenWrtFromUrl = exports.getOpenWrtFromFolder = exports.getPakcageScriptFromFlippy = exports.getPakcageScript = exports.getKernel = exports.getKernels = exports.getFolders = void 0;
 var exec = __importStar(__webpack_require__(986));
+var core = __importStar(__webpack_require__(470));
 var path = __importStar(__webpack_require__(622));
 var io = __importStar(__webpack_require__(1));
 var util = __importStar(__webpack_require__(322));
@@ -7902,11 +8183,16 @@ function getOpenWrtFromFolder(filePath) {
         var files;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, util.getOpenWrtFilePaths(filePath)];
+                case 0:
+                    util.debug("get the Opwnwrt from  path: " + filePath);
+                    return [4 /*yield*/, util.getOpenWrtFilePaths(filePath)];
                 case 1:
                     files = _a.sent();
                     if (files.length != 1) {
-                        throw new Error("OpenWrt should only have one!");
+                        files.forEach(function (item) {
+                            util.warning(item);
+                        });
+                        core.setFailed("OpenWrt should only have one!");
                     }
                     return [4 /*yield*/, util.copy(files[0], path.join(constants_1.OPENWRT_SCRIPT_PATH, constants_1.OPENWRT_FILE_NAME))];
                 case 2:
@@ -7921,7 +8207,9 @@ function getOpenWrtFromUrl(url) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, util.download(url, path.join(constants_1.OPENWRT_SCRIPT_PATH, constants_1.OPENWRT_FILE_NAME))];
+                case 0:
+                    util.debug("get the Opwnwrt from Url: " + url);
+                    return [4 /*yield*/, util.download(url, path.join(constants_1.OPENWRT_SCRIPT_PATH, constants_1.OPENWRT_FILE_NAME))];
                 case 1:
                     _a.sent();
                     return [2 /*return*/];
@@ -7959,6 +8247,7 @@ function create_make_env(options, file) {
             switch (_a.label) {
                 case 0:
                     make_env = "WHOAMI=\"" + options.whoami + "\"\nOPENWRT_VER=\"" + options.openwrt_version + "\"\nKERNEL_VERSION=\"" + options.kernel_version + "\"\nKERNEL_PKG_HOME=\"/opt/kernel\"\nSFE_FLAG=0\nFLOWOFFLOAD_FLAG=1";
+                    util.debug(make_env);
                     return [4 /*yield*/, util.writeFile(file, make_env)];
                 case 1:
                     _a.sent();
@@ -8654,4 +8943,20 @@ exports.exec = exec;
 
 /***/ })
 
-/******/ });
+/******/ },
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ 	"use strict";
+/******/ 
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	!function() {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = function(exports) {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ }
+);

@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as glob from '@actions/glob';
 import * as io from '@actions/io';
 import * as axios from 'axios';
+import * as styles from 'ansi-styles';
 
 
 export function getBooleanInput(inputName: string, defaultValue: boolean = false) {
@@ -32,11 +33,22 @@ export function splitLines(t: string) {
     return t.split(/\r\n|\r|\n/);
 }
 
+export function debug(message: string) {
+    core.debug(`${styles.default.yellow.open} ${message} ${styles.default.yellow.close}}`);
+}
+
+export function info(message: string) {
+    core.info(`${styles.default.green.open} ${message} ${styles.default.green.close}}`);
+}
+export function warning(message: string) {
+    core.info(`${styles.default.red.open} ${message} ${styles.default.red.close}}`);
+}
+
 export async function copy(source: string, dest: string) {
     if (fs.existsSync(source)) {
         await io.cp(source, dest, getDefaultCopyOptions());
     } else {
-        throw Error(`${source} is not exists.`);
+        core.setFailed(`${source} is not exists.`)
     }
 }
 function getDefaultGlobOptions(): glob.GlobOptions {
@@ -56,43 +68,24 @@ export async function get<T = any>(url: string) {
 
 export async function download(fileUrl: string, filePath: string) {
 
-    return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(filePath);
-        let fileInfo: any = null;
+    const response = await axios.default({
+        method: 'GET',
+        url: fileUrl,
+        responseType: 'stream'
+    });
 
-        var url = require('url');
-        // var HttpsProxyAgent = require('https-proxy-agent');
-        var options = url.parse(fileUrl);
+    // pipe the result stream into a file on disc
+    response.data.pipe(fs.createWriteStream(filePath));
 
-        // var proxy = '';
-        // var agent = new HttpsProxyAgent(proxy);
-        // options.agent = agent;
+    // return a promise and resolve when download finishes
+    return new Promise<void>((resolve, reject) => {
+        response.data.on('end', () => {
+            resolve()
+        })
 
-        const request = https.get(options, response => {
-            if (response.statusCode !== 200) {
-                reject(new Error(`Failed to get '${options.toString()}' (${response.statusCode})`));
-                return;
-            }
-
-            fileInfo = {
-                mime: response.headers['content-type'],
-                size: parseInt(String(response.headers['content-length']), 10),
-            };
-
-            response.pipe(file);
-        });
-
-        file.on('finish', () => resolve(fileInfo));
-
-        request.on('error', err => {
-            fs.unlink(filePath, () => reject(err));
-        });
-
-        file.on('error', err => {
-            fs.unlink(filePath, () => reject(err));
-        });
-
-        request.end();
+        response.data.on('error', () => {
+            reject()
+        })
     });
 }
 
@@ -104,14 +97,21 @@ export async function fileExist(path: string) {
         return false
     }
 }
-export async function getOpenWrtFilePaths(searchPath: string) {
-    const patterns = path.join(searchPath, '*.tar.gz');
-    console.log(patterns);
+export async function getFiles(patterns: string) {
     const globber = await glob.create(patterns, getDefaultGlobOptions())
     const files = await globber.glob()
     files.forEach(item => {
-        console.log(item);
+        debug(item);
     });
+    return files;
+}
+export async function getOpenWrtFilePaths(searchPath: string) {
+    if (searchPath.indexOf('$GITHUB_WORKSPACE') >= 0) {
+        searchPath = searchPath.replace('$GITHUB_WORKSPACE', process.env.GITHUB_WORKSPACE as string);
+    }
+    const patterns = path.join(searchPath, '*.tar.gz');
+    core.debug(patterns);
+    const files = await getFiles(patterns);
     return files;
 }
 

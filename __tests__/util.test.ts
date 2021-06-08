@@ -20,11 +20,11 @@ describe('util test', () => {
         expect(files.length).toEqual(1);
     })
 
-    // it('donwload file', async () => {
-    //     await download('https://gitee.com/solidsnake2007/Case2Pinyin/raw/master/README.md', path.join(root, 'd.txt'));
-    //     let exist = await fileExist(path.join(root, 'd.txt'));
-    //     expect(exist).toEqual(true);
-    // })
+    it('donwload file', async () => {
+        await download('https://gitee.com/solidsnake2007/Case2Pinyin/raw/master/README.md', path.join(root, 'd.txt'));
+        let exist = await fileExist(path.join(root, 'd.txt'));
+        expect(exist).toEqual(true);
+    })
 
     it('copy test', async () => {
         let sourceP = path.join(__dirname, 'sourceP')

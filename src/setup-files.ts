@@ -1,4 +1,5 @@
 import * as exec from '@actions/exec';
+import * as core from '@actions/core';
 import * as path from 'path';
 import * as io from '@actions/io';
 import * as util from './util';
@@ -67,13 +68,18 @@ export async function getPakcageScriptFromFlippy() {
 }
 
 export async function getOpenWrtFromFolder(filePath: string) {
+    util.debug(`get the Opwnwrt from  path: ${filePath}`)
     const files = await util.getOpenWrtFilePaths(filePath);
     if (files.length != 1) {
-        throw new Error("OpenWrt should only have one!");
+        files.forEach(item => {
+            util.warning(item)
+        });
+        core.setFailed("OpenWrt should only have one!")
     }
     await util.copy(files[0], path.join(OPENWRT_SCRIPT_PATH, OPENWRT_FILE_NAME));
 }
 export async function getOpenWrtFromUrl(url: string) {
+    util.debug(`get the Opwnwrt from Url: ${url}`)
     await util.download(url, path.join(OPENWRT_SCRIPT_PATH, OPENWRT_FILE_NAME));
 }
 
@@ -97,5 +103,6 @@ KERNEL_VERSION="${options.kernel_version}"
 KERNEL_PKG_HOME="/opt/kernel"
 SFE_FLAG=0
 FLOWOFFLOAD_FLAG=1`;
+    util.debug(make_env);
     await util.writeFile(file, make_env);
 }
