@@ -45,6 +45,18 @@ v2.0 and main is the version of nodejs.The kernel-version's value can set Laster
     # add the sub name in file: xxxx-xx-{sub-name}.img.gz
     sub-name: # optional
  ```
+ simple
+ ```
+ name: Package OpenWrt with flippy script
+  # You may pin to the exact commit or the version.
+  uses: mingxiaoyu/package-flippy-openwrt@main
+  with:
+    # The type of the drive
+    types: # optional, default is s905d
+    # The input path/ulr of the openwrt
+    openwrt-path/openwrt-url: # optional
+ ```
+ 
 v1.0:  kernel-version only support the +o.   
 After the 61 kernel, the Laster will set the default value is 5.4.xxx-flippy-61+o.
 ```
