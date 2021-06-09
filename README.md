@@ -1,4 +1,4 @@
-# package-flippy-openwrt
+# Using flippy script to package openwrt
 
 English | [简体中文](./README-zh_CN.md)
 
