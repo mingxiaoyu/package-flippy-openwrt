@@ -1,5 +1,9 @@
 # package-flippy-openwrt
 
+English | [简体中文](./README-zh_CN.md)
+
+[![unifreq](https://img.shields.io/badge/kernel-unifreq-blue.svg?style=flat-square&logo=telegram)](https://t.me/openwrt_flippy) 
+[![unifreq](https://img.shields.io/badge/scripts-unifreq-blue.svg?style=flat-square&logo=github)](https://github.com/unifreq/openwrt_packit) 
 # Parameters
 
 | Inputs | Type |Description | Value |
