@@ -6,7 +6,7 @@
 [![unifreq](https://img.shields.io/badge/scripts-unifreq-blue.svg?style=flat-square&logo=github)](https://github.com/unifreq/openwrt_packit) 
 
 喜欢的可以给个Star. 想自己打包的，也没必要fork。直接食用即可。把whoami的值设置为你的名字。  
-我为人人，人人为我，还是喜欢大家PR内核到这里[flippy-packages](https://github.com/mingxiaoyu/flippy-packages)。  
+我为人人，人人为我，还是希望大家PR内核到这里[flippy-packages](https://github.com/mingxiaoyu/flippy-packages)。  
 工作原因，更新最新内核可能晚一天这样。主要是F大每次发新内核时间都是大晚上。第二天要上班。更新只能是第二天晚上。  
 PR给我。我还是可以在上班时间去合并的。如果希望协助更新内核。提Issue给我，我给你权限
 
