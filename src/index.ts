@@ -8,15 +8,6 @@ import { DRIVERS_DICT, KERNEL_PATH, MAKEENV_FILE_NAME, OPENWRT_PACKAGE_TMP, OPEN
 import { getPackageOptions } from "./PackageOptions";
 import { create_make_env, getFolders, getKernel, getKernels, getOpenWrtFromFolder, getOpenWrtFromUrl, getOpenwrtver, getPakcageScript, getPakcageScriptFromFlippy } from "./setup-files";
 
-
-
-async function movefile(distPath: string) {
-    await exec.exec(`sudo mkdir -p ${distPath}`);
-    await exec.exec(`sudo chmod  -R 777 ${distPath}`);
-    await util.copy(path.join(UPDATE_FILE_PAHT, UPDATE_FILE_NAME), `${distPath}/${UPDATE_FILE_NAME}`)
-    await util.copy(OPENWRT_PACKAGE_TMP, `${distPath}`);
-}
-
 async function clear() {
     await io.rmRF(OPENWRT_SCRIPT_PATH);
     await io.rmRF(KERNEL_PATH);
@@ -48,6 +39,8 @@ async function run() {
 
     await io.mkdirP(OPENWRT_PACKAGE_TMP);
     await exec.exec(`sudo chmod  -R 777 ${OPENWRT_SCRIPT_PATH}`);
+    await exec.exec(`sudo mkdir -p ${packageOptions.out}`);
+    await exec.exec(`sudo chmod  -R 777 ${packageOptions.out}`);
 
     if (util.isNull(packageOptions.openwrt_version)) {
         let makeenvPath = path.join(OPENWRT_SCRIPT_PATH, MAKEENV_FILE_NAME);
@@ -75,17 +68,19 @@ async function run() {
         let files = await util.getFiles(`${OPENWRT_PACKAGE_TMP}/*.img`);
         util.debug(`The img count:${files.length}`)
         if (files.length > 0) {
+            await util.copy(path.join(UPDATE_FILE_PAHT, UPDATE_FILE_NAME), `${packageOptions.out}/${UPDATE_FILE_NAME}`)
             await Promise.all(files.map(async item => {
                 await exec.exec(`sudo gzip ${item}`);
                 let basename = path.basename(item).replace('.img', '');
                 if (!util.isNull(packageOptions.sub_name)) {
-                    await io.mv(`${item}.gz`, path.join(OPENWRT_PACKAGE_TMP, `${basename}-${packageOptions.sub_name}.img.gz`));
+                    await io.mv(`${item}.gz`, path.join(packageOptions.out, `${basename}-${packageOptions.sub_name}.img.gz`));
+                }else{
+                    await io.mv(`${item}.gz`, path.join(packageOptions.out, `${basename}.img.gz`));
                 }
             }));
         }
     }));
     util.debug("packaged.")
-    await movefile(packageOptions.out);
     await clear();
     core.setOutput("status", true);
 

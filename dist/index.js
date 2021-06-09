@@ -4089,27 +4089,6 @@ var util = __importStar(__webpack_require__(322));
 var constants_1 = __webpack_require__(694);
 var PackageOptions_1 = __webpack_require__(18);
 var setup_files_1 = __webpack_require__(881);
-function movefile(distPath) {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, exec.exec("sudo mkdir -p " + distPath)];
-                case 1:
-                    _a.sent();
-                    return [4 /*yield*/, exec.exec("sudo chmod  -R 777 " + distPath)];
-                case 2:
-                    _a.sent();
-                    return [4 /*yield*/, util.copy(path.join(constants_1.UPDATE_FILE_PAHT, constants_1.UPDATE_FILE_NAME), distPath + "/" + constants_1.UPDATE_FILE_NAME)];
-                case 3:
-                    _a.sent();
-                    return [4 /*yield*/, util.copy(constants_1.OPENWRT_PACKAGE_TMP, "" + distPath)];
-                case 4:
-                    _a.sent();
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
 function clear() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -4167,31 +4146,37 @@ function run() {
                     return [4 /*yield*/, exec.exec("sudo chmod  -R 777 " + constants_1.OPENWRT_SCRIPT_PATH)];
                 case 5:
                     _a.sent();
-                    if (!util.isNull(packageOptions.openwrt_version)) return [3 /*break*/, 8];
+                    return [4 /*yield*/, exec.exec("sudo mkdir -p " + packageOptions.out)];
+                case 6:
+                    _a.sent();
+                    return [4 /*yield*/, exec.exec("sudo chmod  -R 777 " + packageOptions.out)];
+                case 7:
+                    _a.sent();
+                    if (!util.isNull(packageOptions.openwrt_version)) return [3 /*break*/, 10];
                     makeenvPath = path.join(constants_1.OPENWRT_SCRIPT_PATH, constants_1.MAKEENV_FILE_NAME);
                     return [4 /*yield*/, util.fileExist(makeenvPath)];
-                case 6:
-                    if (!_a.sent()) return [3 /*break*/, 8];
+                case 8:
+                    if (!_a.sent()) return [3 /*break*/, 10];
                     return [4 /*yield*/, setup_files_1.getOpenwrtver(makeenvPath)];
-                case 7:
+                case 9:
                     opv = _a.sent();
                     packageOptions.openwrt_version = opv;
-                    _a.label = 8;
-                case 8:
+                    _a.label = 10;
+                case 10:
                     util.info(JSON.stringify(packageOptions));
                     return [4 /*yield*/, setup_files_1.create_make_env(packageOptions, path.join(constants_1.OPENWRT_SCRIPT_PATH, constants_1.MAKEENV_FILE_NAME))];
-                case 9:
+                case 11:
                     _a.sent();
-                    if (!!util.isNull(packageOptions.openwrt_path)) return [3 /*break*/, 11];
+                    if (!!util.isNull(packageOptions.openwrt_path)) return [3 /*break*/, 13];
                     return [4 /*yield*/, setup_files_1.getOpenWrtFromFolder(packageOptions.openwrt_path)];
-                case 10:
-                    _a.sent();
-                    return [3 /*break*/, 13];
-                case 11: return [4 /*yield*/, setup_files_1.getOpenWrtFromUrl(packageOptions.openwrt_url)];
                 case 12:
                     _a.sent();
-                    _a.label = 13;
-                case 13:
+                    return [3 /*break*/, 15];
+                case 13: return [4 /*yield*/, setup_files_1.getOpenWrtFromUrl(packageOptions.openwrt_url)];
+                case 14:
+                    _a.sent();
+                    _a.label = 15;
+                case 15:
                     util.debug("packaging....");
                     devices = packageOptions.devices.split(',');
                     return [4 /*yield*/, Promise.all(devices.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
@@ -4210,7 +4195,10 @@ function run() {
                                     case 3:
                                         files = _a.sent();
                                         util.debug("The img count:" + files.length);
-                                        if (!(files.length > 0)) return [3 /*break*/, 5];
+                                        if (!(files.length > 0)) return [3 /*break*/, 6];
+                                        return [4 /*yield*/, util.copy(path.join(constants_1.UPDATE_FILE_PAHT, constants_1.UPDATE_FILE_NAME), packageOptions.out + "/" + constants_1.UPDATE_FILE_NAME)];
+                                    case 4:
+                                        _a.sent();
                                         return [4 /*yield*/, Promise.all(files.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
                                                 var basename;
                                                 return __generator(this, function (_a) {
@@ -4220,29 +4208,30 @@ function run() {
                                                             _a.sent();
                                                             basename = path.basename(item).replace('.img', '');
                                                             if (!!util.isNull(packageOptions.sub_name)) return [3 /*break*/, 3];
-                                                            return [4 /*yield*/, io.mv(item + ".gz", path.join(constants_1.OPENWRT_PACKAGE_TMP, basename + "-" + packageOptions.sub_name + ".img.gz"))];
+                                                            return [4 /*yield*/, io.mv(item + ".gz", path.join(packageOptions.out, basename + "-" + packageOptions.sub_name + ".img.gz"))];
                                                         case 2:
                                                             _a.sent();
-                                                            _a.label = 3;
-                                                        case 3: return [2 /*return*/];
+                                                            return [3 /*break*/, 5];
+                                                        case 3: return [4 /*yield*/, io.mv(item + ".gz", path.join(packageOptions.out, basename + ".img.gz"))];
+                                                        case 4:
+                                                            _a.sent();
+                                                            _a.label = 5;
+                                                        case 5: return [2 /*return*/];
                                                     }
                                                 });
                                             }); }))];
-                                    case 4:
+                                    case 5:
                                         _a.sent();
-                                        _a.label = 5;
-                                    case 5: return [2 /*return*/];
+                                        _a.label = 6;
+                                    case 6: return [2 /*return*/];
                                 }
                             });
                         }); }))];
-                case 14:
+                case 16:
                     _a.sent();
                     util.debug("packaged.");
-                    return [4 /*yield*/, movefile(packageOptions.out)];
-                case 15:
-                    _a.sent();
                     return [4 /*yield*/, clear()];
-                case 16:
+                case 17:
                     _a.sent();
                     core.setOutput("status", true);
                     return [2 /*return*/];
@@ -4354,7 +4343,7 @@ module.exports = require("assert");
 /***/ 361:
 /***/ (function(module) {
 
-module.exports = {"_from":"axios","_id":"axios@0.21.1","_inBundle":false,"_integrity":"sha1-IlY0gZYvTWvemnbVFu8OXTwJsrg=","_location":"/axios","_phantomChildren":{},"_requested":{"type":"tag","registry":true,"raw":"axios","name":"axios","escapedName":"axios","rawSpec":"","saveSpec":null,"fetchSpec":"latest"},"_requiredBy":["#USER","/"],"_resolved":"https://registry.npm.taobao.org/axios/download/axios-0.21.1.tgz","_shasum":"22563481962f4d6bde9a76d516ef0e5d3c09b2b8","_spec":"axios","_where":"D:\\workspaces\\githubs\\package-flippy-openwrt","author":{"name":"Matt Zabriskie"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"bugs":{"url":"https://github.com/axios/axios/issues"},"bundleDependencies":false,"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}],"dependencies":{"follow-redirects":"^1.10.0"},"deprecated":false,"description":"Promise based HTTP client for the browser and node.js","devDependencies":{"bundlesize":"^0.17.0","coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.0.2","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^20.1.0","grunt-karma":"^2.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^1.0.18","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^1.3.0","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-firefox-launcher":"^1.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^1.2.0","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.7","karma-webpack":"^1.7.0","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^5.2.0","sinon":"^4.5.0","typescript":"^2.8.1","url-search-params":"^0.10.0","webpack":"^1.13.1","webpack-dev-server":"^1.14.1"},"homepage":"https://github.com/axios/axios","jsdelivr":"dist/axios.min.js","keywords":["xhr","http","ajax","promise","node"],"license":"MIT","main":"index.js","name":"axios","repository":{"type":"git","url":"git+https://github.com/axios/axios.git"},"scripts":{"build":"NODE_ENV=production grunt build","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","examples":"node ./examples/server.js","fix":"eslint --fix lib/**/*.js","postversion":"git push && git push --tags","preversion":"npm test","start":"node ./sandbox/server.js","test":"grunt test && bundlesize","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json"},"typings":"./index.d.ts","unpkg":"dist/axios.min.js","version":"0.21.1"};
+module.exports = {"_args":[["axios@0.21.1","D:\\Workspaces\\github\\package-flippy-openwrt"]],"_from":"axios@0.21.1","_id":"axios@0.21.1","_inBundle":false,"_integrity":"sha1-IlY0gZYvTWvemnbVFu8OXTwJsrg=","_location":"/axios","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"axios@0.21.1","name":"axios","escapedName":"axios","rawSpec":"0.21.1","saveSpec":null,"fetchSpec":"0.21.1"},"_requiredBy":["/"],"_resolved":"https://registry.npm.taobao.org/axios/download/axios-0.21.1.tgz","_spec":"0.21.1","_where":"D:\\Workspaces\\github\\package-flippy-openwrt","author":{"name":"Matt Zabriskie"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"bugs":{"url":"https://github.com/axios/axios/issues"},"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}],"dependencies":{"follow-redirects":"^1.10.0"},"description":"Promise based HTTP client for the browser and node.js","devDependencies":{"bundlesize":"^0.17.0","coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.0.2","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^20.1.0","grunt-karma":"^2.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^1.0.18","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^1.3.0","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-firefox-launcher":"^1.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^1.2.0","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.7","karma-webpack":"^1.7.0","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^5.2.0","sinon":"^4.5.0","typescript":"^2.8.1","url-search-params":"^0.10.0","webpack":"^1.13.1","webpack-dev-server":"^1.14.1"},"homepage":"https://github.com/axios/axios","jsdelivr":"dist/axios.min.js","keywords":["xhr","http","ajax","promise","node"],"license":"MIT","main":"index.js","name":"axios","repository":{"type":"git","url":"git+https://github.com/axios/axios.git"},"scripts":{"build":"NODE_ENV=production grunt build","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","examples":"node ./examples/server.js","fix":"eslint --fix lib/**/*.js","postversion":"git push && git push --tags","preversion":"npm test","start":"node ./sandbox/server.js","test":"grunt test && bundlesize","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json"},"typings":"./index.d.ts","unpkg":"dist/axios.min.js","version":"0.21.1"};
 
 /***/ }),
 
