@@ -8110,7 +8110,7 @@ function getKernel(kernelName) {
             switch (_a.label) {
                 case 0:
                     kernamefoldername = kernelName.replace("+o", "-o");
-                    kernamefoldername.replace('+', '');
+                    kernamefoldername = kernamefoldername.replace('+', '');
                     command = "svn co " + constants_1.KERNEL_URL + "/" + kernamefoldername + "/kernel";
                     return [4 /*yield*/, exec.exec(command)];
                 case 1:

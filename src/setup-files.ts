@@ -48,7 +48,7 @@ export function getKernels(folers: string[]) {
 
 export async function getKernel(kernelName: string) {
     let kernamefoldername = kernelName.replace("+o", "-o");
-    kernamefoldername.replace('+', '');
+    kernamefoldername = kernamefoldername.replace('+', '');
     let command = `svn co ${KERNEL_URL}/${kernamefoldername}/kernel`;
     await exec.exec(command);
     await util.copy('kernel', KERNEL_PATH);
