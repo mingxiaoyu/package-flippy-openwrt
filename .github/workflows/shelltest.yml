@@ -1,0 +1,65 @@
+name: shell test
+
+on:
+  workflow_dispatch:
+
+env:
+  URL: https://github.com/mingxiaoyu/N1Openwrt/releases/latest/download/openwrt-armvirt-64-default-rootfs-mini.tar.gz
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    name: shell test
+  
+    steps:   
+    - name: Initialization environment
+      run: |
+        sudo mkdir -p /workdir
+        sudo chown $USER:$GROUPS /workdir
+        
+        cd /workdir
+        sudo mkdir openwrt
+        sudo chown $USER:$GROUPS openwrt
+        cd openwrt
+        wget ${URL} -O test.tar.gz
+        sudo echo "test" > update-amlogic-openwrt.sh
+
+        sudo mkdir -p /upload
+        sudo chown $USER:$GROUPS /upload
+        
+        cd /upload
+        echo "UPLOAD=$PWD" >> $GITHUB_ENV
+        
+    - name: Install the package
+      run: |
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install xz-utils btrfs-progs gawk zip unzip curl dosfstools  uuid-runtime
+        sudo -E apt-get -qq install git  git-core
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt 
+ 
+    - name: check1
+      run: |
+        cd openwrt
+        echo "current:${PWD}"
+        ls
+      
+    - name: Package OpenWrt with flippy script by URL
+      uses: mingxiaoyu/package-flippy-openwrt@shell
+      id: package-url
+      with:
+        types: s905d
+        out: ${{ env.UPLOAD }}
+        sub-name: url
+        kernel-version: 5.12.13-flippy-61+
+        openwrt-url: ${{ env.URL }}
+        
+    - name: check
+      run: |        
+        echo "url-out:${{ steps.package-url.outputs.out }}"
+        echo "url-status:${{ steps.package-url.outputs.status }}"
+        cd $UPLOAD
+        ls
