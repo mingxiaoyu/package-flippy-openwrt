@@ -26,16 +26,17 @@ describe('setup files test', () => {
             "5.12.8-flippy-59",
             "5.4.113-flippy-57-o",
             "5.4.115-flippy-57-o",
+            "5.12.13-flippy-61"
         ]
         let kernels = getKernels(data);
         expect(kernels.Latest_O).toBe("5.4.115-flippy-57+o")
-        expect(kernels.Latest).toBe("5.12.8-flippy-59")
+        expect(kernels.Latest).toBe("5.12.13-flippy-61")
 
     });
 
     it('create_make_env', async () => {
         let packageOptions = mock<PackageOptions>();
-        packageOptions.kernel_version = 'k1';
+        packageOptions.kernel_version = '5.12.8-flippy-59';
         packageOptions.whoami = "mingxiaoyu"
         packageOptions.openwrt_version = 'R21.6.1'
         await create_make_env(packageOptions, path.join(root, 'make.env'));
@@ -43,10 +44,10 @@ describe('setup files test', () => {
         const data = await util.readFile(path.join(root, 'make.env'))
         expect(data).toContain(`WHOAMI="${packageOptions.whoami}"`);
         expect(data).toContain(`OPENWRT_VER="${packageOptions.openwrt_version}"`);
-        expect(data).toContain(`KERNEL_VERSION="${packageOptions.kernel_version}"`);
+        expect(data).toContain(`KERNEL_VERSION="5.12.8-flippy-59+"`);
 
-        let read_date = await getOpenwrtver(path.join(root, 'make.env'));
-        expect(read_date).toBe("R21.6.1");
+        let read_data = await getOpenwrtver(path.join(root, 'make.env'));
+        expect(read_data).toBe("R21.6.1");
     });
 
     it('getKernel test', async () => {

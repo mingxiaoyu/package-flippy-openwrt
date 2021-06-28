@@ -27,7 +27,7 @@ export function getKernels(folers: string[]) {
     let max = 0;
     let maxo = 0;
     folers.forEach(item => {
-        let version = parseFloat(item.substring(0, 7).replace('.', ''));
+        let version = parseFloat(item.substring(0, 7).replace('.', '').replace('.', ''));
         var kernerName = item.replace("-o", "+o");
         if (item.includes('-o')) {
             kernels.Item.push(kernerName);
@@ -97,9 +97,13 @@ export async function getOpenwrtver(filePath: string) {
 
 }
 export async function create_make_env(options: PackageOptions, file: string) {
+    let k_v = options.kernel_version;
+    if (k_v.indexOf('+o') < 0) {
+        k_v = k_v + "+";
+    }
     let make_env = `WHOAMI="${options.whoami}"
 OPENWRT_VER="${options.openwrt_version}"
-KERNEL_VERSION="${options.kernel_version}"
+KERNEL_VERSION="${k_v}"
 KERNEL_PKG_HOME="/opt/kernel"
 SFE_FLAG=0
 FLOWOFFLOAD_FLAG=1`;
