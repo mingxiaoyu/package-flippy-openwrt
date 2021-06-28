@@ -63,6 +63,7 @@ jobs:
         types: s905d
         out: ${{ env.UPLOAD }}
         sub-name: path2
+        kernel-version: latest+
         openwrt-path: openwrt
         
     - name: Package OpenWrt with flippy script by URL
