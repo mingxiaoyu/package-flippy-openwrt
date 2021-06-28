@@ -22,14 +22,14 @@ describe('setup files test', () => {
 
     it('getKernels', async () => {
         let data = [
-            "5.10.36-flippy-58",
-            "5.12.8-flippy-59",
+            "5.10.36-flippy-58+",
+            "5.12.8-flippy-59+",
             "5.4.113-flippy-57-o",
             "5.4.115-flippy-57-o",
         ]
         let kernels = getKernels(data);
         expect(kernels.Latest_O).toBe("5.4.115-flippy-57+o")
-        expect(kernels.Latest).toBe("5.12.8-flippy-59")
+        expect(kernels.Latest).toBe("5.12.8-flippy-59+")
 
     });
 
