@@ -29,9 +29,10 @@ async function run() {
     if (packageOptions.kernel_version.toLowerCase() === 'latest+') {
         packageOptions.kernel_version = Kernels.Latest;
     }
-    if (!Kernels.Item.includes(packageOptions.kernel_version)) {
-        core.setFailed(`${packageOptions.kernel_version} is not correct`);
-    }
+    
+    // if (!Kernels.Item.includes(packageOptions.kernel_version)) {
+    //     core.setFailed(`${packageOptions.kernel_version} is not correct`);
+    // }
 
     await getKernel(packageOptions.kernel_version);
 

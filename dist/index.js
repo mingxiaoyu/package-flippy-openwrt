@@ -4131,11 +4131,14 @@ function run() {
                     if (packageOptions.kernel_version.toLowerCase() === 'latest+') {
                         packageOptions.kernel_version = Kernels.Latest;
                     }
-                    if (!Kernels.Item.includes(packageOptions.kernel_version)) {
-                        core.setFailed(packageOptions.kernel_version + " is not correct");
-                    }
+                    // if (!Kernels.Item.includes(packageOptions.kernel_version)) {
+                    //     core.setFailed(`${packageOptions.kernel_version} is not correct`);
+                    // }
                     return [4 /*yield*/, setup_files_1.getKernel(packageOptions.kernel_version)];
                 case 2:
+                    // if (!Kernels.Item.includes(packageOptions.kernel_version)) {
+                    //     core.setFailed(`${packageOptions.kernel_version} is not correct`);
+                    // }
                     _a.sent();
                     return [4 /*yield*/, setup_files_1.getPakcageScript()];
                 case 3:
