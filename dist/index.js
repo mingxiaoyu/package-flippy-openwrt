@@ -8083,7 +8083,7 @@ function getKernels(folers) {
     var max = 0;
     var maxo = 0;
     folers.forEach(function (item) {
-        var version = parseFloat(item.substring(0, 7).replace('.', ''));
+        var version = parseFloat(item.substring(0, 7).replace('.', '').replace('.', ''));
         var kernerName = item.replace("-o", "+o");
         if (item.includes('-o')) {
             kernels.Item.push(kernerName);
