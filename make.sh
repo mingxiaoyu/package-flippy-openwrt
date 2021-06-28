@@ -108,14 +108,10 @@ SCRIPT_S022X_FILE="mk_s922x_gtking.sh"
 create_makeenv(){
 	cd /opt/openwrt
 	rm -f make.env 2>/dev/null
-	kv=${KERNEL_VERSION}
-	if [ $kv.indexof('+o') -lt 0 ] then
-		kv=$kv"+"
-	fi
 cat > make.env <<EOF
 WHOAMI="${WHOAMI}"
 OPENWRT_VER="${OPENWRT_VERSION}"
-KERNEL_VERSION="${kv}"
+KERNEL_VERSION="${KERNEL_VERSION}"
 KERNEL_PKG_HOME="/opt/kernel"
 SFE_FLAG=0
 FLOWOFFLOAD_FLAG=1
@@ -124,6 +120,7 @@ EOF
 
 get_kernel(){
 	KERNEL_FOLDER_NAME=$(echo ${KERNEL_VERSION/+o/-o})
+	KERNEL_FOLDER_NAME=$(echo ${KERNEL_FOLDER_NAME} | sed 's/+//g')
 	svn co ${KERNEL_URL}/${KERNEL_FOLDER_NAME}/kernel  >/dev/null 2>&1
 	cp -r kernel/* /opt/kernel
 }
