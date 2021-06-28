@@ -39,7 +39,7 @@ export function getKernels(folers: string[]) {
             kernels.Item.push(kernerName);
             if (max < version) {
                 max = version;
-                kernels.Latest = kernerName;
+                kernels.Latest = kernerName + "+";
             }
         }
     });
@@ -48,6 +48,7 @@ export function getKernels(folers: string[]) {
 
 export async function getKernel(kernelName: string) {
     let kernamefoldername = kernelName.replace("+o", "-o");
+    kernamefoldername.replace('+', '');
     let command = `svn co ${KERNEL_URL}/${kernamefoldername}/kernel`;
     await exec.exec(command);
     await util.copy('kernel', KERNEL_PATH);
@@ -97,13 +98,9 @@ export async function getOpenwrtver(filePath: string) {
 
 }
 export async function create_make_env(options: PackageOptions, file: string) {
-    let k_v = options.kernel_version;
-    if (k_v.indexOf('+o') < 0) {
-        k_v = k_v + "+";
-    }
     let make_env = `WHOAMI="${options.whoami}"
 OPENWRT_VER="${options.openwrt_version}"
-KERNEL_VERSION="${k_v}"
+KERNEL_VERSION="${options.kernel_version}"
 KERNEL_PKG_HOME="/opt/kernel"
 SFE_FLAG=0
 FLOWOFFLOAD_FLAG=1`;
