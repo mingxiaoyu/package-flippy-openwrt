@@ -103,7 +103,9 @@ OPENWRT_VER="${options.openwrt_version}"
 KERNEL_VERSION="${options.kernel_version}"
 KERNEL_PKG_HOME="/opt/kernel"
 SFE_FLAG=0
-FLOWOFFLOAD_FLAG=1`;
+FLOWOFFLOAD_FLAG=1
+ENABLE_WIFI_K504=1
+ENABLE_WIFI_K510=1`;
     util.debug(make_env);
     await util.writeFile(file, make_env);
 }
