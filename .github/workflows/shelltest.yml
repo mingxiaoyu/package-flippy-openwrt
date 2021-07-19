@@ -54,7 +54,7 @@ jobs:
         types: l1pro,s905d,beikeyun
         out: ${{ env.UPLOAD }}
         sub-name: url
-        kernel-version: 5.12.13-flippy-61+
+        kernel-version: 5.12.15-flippy-61+
         openwrt-url: ${{ env.URL }}
         
     - name: check
