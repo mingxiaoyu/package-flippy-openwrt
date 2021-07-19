@@ -4114,7 +4114,7 @@ function getPackageCommand(diverName) {
 exports.getPackageCommand = getPackageCommand;
 function run() {
     return __awaiter(this, void 0, void 0, function () {
-        var packageOptions, github_Folders, Kernels, makeenvPath, opv, devices;
+        var packageOptions, github_Folders, Kernels, makeenvPath, opv, devices, files;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -4183,8 +4183,7 @@ function run() {
                     util.debug("packaging....");
                     devices = packageOptions.devices.split(',');
                     return [4 /*yield*/, Promise.all(devices.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
-                            var command, files;
-                            var _this = this;
+                            var command;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4 /*yield*/, getPackageCommand(item)];
@@ -4194,47 +4193,48 @@ function run() {
                                         return [4 /*yield*/, exec.exec("sudo ./" + command, [], { cwd: constants_1.OPENWRT_SCRIPT_PATH })];
                                     case 2:
                                         _a.sent();
-                                        return [4 /*yield*/, util.getFiles(constants_1.OPENWRT_PACKAGE_TMP + "/*.img")];
-                                    case 3:
-                                        files = _a.sent();
-                                        util.debug("The img count:" + files.length);
-                                        if (!(files.length > 0)) return [3 /*break*/, 6];
-                                        return [4 /*yield*/, util.copy(path.join(constants_1.UPDATE_FILE_PAHT, constants_1.UPDATE_FILE_NAME), packageOptions.out + "/" + constants_1.UPDATE_FILE_NAME)];
-                                    case 4:
-                                        _a.sent();
-                                        return [4 /*yield*/, Promise.all(files.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
-                                                var basename;
-                                                return __generator(this, function (_a) {
-                                                    switch (_a.label) {
-                                                        case 0: return [4 /*yield*/, exec.exec("sudo gzip " + item)];
-                                                        case 1:
-                                                            _a.sent();
-                                                            basename = path.basename(item).replace('.img', '');
-                                                            if (!!util.isNull(packageOptions.sub_name)) return [3 /*break*/, 3];
-                                                            return [4 /*yield*/, io.mv(item + ".gz", path.join(packageOptions.out, basename + "-" + packageOptions.sub_name + ".img.gz"))];
-                                                        case 2:
-                                                            _a.sent();
-                                                            return [3 /*break*/, 5];
-                                                        case 3: return [4 /*yield*/, io.mv(item + ".gz", path.join(packageOptions.out, basename + ".img.gz"))];
-                                                        case 4:
-                                                            _a.sent();
-                                                            _a.label = 5;
-                                                        case 5: return [2 /*return*/];
-                                                    }
-                                                });
-                                            }); }))];
-                                    case 5:
-                                        _a.sent();
-                                        _a.label = 6;
-                                    case 6: return [2 /*return*/];
+                                        return [2 /*return*/];
                                 }
                             });
                         }); }))];
                 case 16:
                     _a.sent();
+                    return [4 /*yield*/, util.getFiles(constants_1.OPENWRT_PACKAGE_TMP + "/*.img")];
+                case 17:
+                    files = _a.sent();
+                    util.debug("The img count:" + files.length);
+                    if (!(files.length > 0)) return [3 /*break*/, 20];
+                    return [4 /*yield*/, util.copy(path.join(constants_1.UPDATE_FILE_PAHT, constants_1.UPDATE_FILE_NAME), packageOptions.out + "/" + constants_1.UPDATE_FILE_NAME)];
+                case 18:
+                    _a.sent();
+                    return [4 /*yield*/, Promise.all(files.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
+                            var basename;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, exec.exec("sudo gzip " + item)];
+                                    case 1:
+                                        _a.sent();
+                                        basename = path.basename(item).replace('.img', '');
+                                        if (!!util.isNull(packageOptions.sub_name)) return [3 /*break*/, 3];
+                                        return [4 /*yield*/, io.mv(item + ".gz", path.join(packageOptions.out, basename + "-" + packageOptions.sub_name + ".img.gz"))];
+                                    case 2:
+                                        _a.sent();
+                                        return [3 /*break*/, 5];
+                                    case 3: return [4 /*yield*/, io.mv(item + ".gz", path.join(packageOptions.out, basename + ".img.gz"))];
+                                    case 4:
+                                        _a.sent();
+                                        _a.label = 5;
+                                    case 5: return [2 /*return*/];
+                                }
+                            });
+                        }); }))];
+                case 19:
+                    _a.sent();
+                    _a.label = 20;
+                case 20:
                     util.debug("packaged.");
                     return [4 /*yield*/, clear()];
-                case 17:
+                case 21:
                     _a.sent();
                     core.setOutput("status", true);
                     return [2 /*return*/];
