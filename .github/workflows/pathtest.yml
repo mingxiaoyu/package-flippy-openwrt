@@ -51,7 +51,7 @@ jobs:
       uses: mingxiaoyu/package-flippy-openwrt@dev
       id: package-path
       with:
-        types: s905d
+        types: l1pro,s905d,beikeyun
         out: ${{ env.UPLOAD }}
         sub-name: path
         openwrt-path: $GITHUB_WORKSPACE/openwrt
