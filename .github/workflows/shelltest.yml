@@ -54,12 +54,24 @@ jobs:
         types: l1pro,s905d,beikeyun
         out: ${{ env.UPLOAD }}
         sub-name: url
+        kernel-version: 5.12.10-flippy-60+
+        openwrt-url: ${{ env.URL }}
+  
+    - name: Package OpenWrt with flippy script by URL
+      uses: mingxiaoyu/package-flippy-openwrt@shell
+      id: package-url2
+      with:
+        types: l1pro,s905d,beikeyun
+        out: ${{ env.UPLOAD }}
+        sub-name: url
         kernel-version: 5.12.15-flippy-61+
         openwrt-url: ${{ env.URL }}
-        
     - name: check
       run: |        
         echo "url-out:${{ steps.package-url.outputs.out }}"
         echo "url-status:${{ steps.package-url.outputs.status }}"
+        
+        echo "url2-out:${{ steps.package-url2.outputs.out }}"
+        echo "url2-status:${{ steps.package-url2.outputs.status }}"
         cd $UPLOAD
         ls
