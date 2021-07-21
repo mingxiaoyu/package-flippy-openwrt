@@ -205,6 +205,8 @@ move_to_out(){
 }
 
 clearfiles(){
+	cd ${WORK_DIR}
+	sudo rm -rf kernel
 	sudo rm -rf /opt/openwrt
 	sudo rm -rf /opt/kernel
 }
