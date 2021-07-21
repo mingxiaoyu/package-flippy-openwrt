@@ -29,7 +29,7 @@ async function run() {
     if (packageOptions.kernel_version.toLowerCase() === 'latest+') {
         packageOptions.kernel_version = Kernels.Latest;
     }
-    
+
     // if (!Kernels.Item.includes(packageOptions.kernel_version)) {
     //     core.setFailed(`${packageOptions.kernel_version} is not correct`);
     // }
@@ -65,22 +65,23 @@ async function run() {
         let command = await getPackageCommand(item);
         util.debug(`command:${command} cwd: ${OPENWRT_SCRIPT_PATH}`);
         await exec.exec(`sudo ./${command}`, [], { cwd: OPENWRT_SCRIPT_PATH });
-
-        let files = await util.getFiles(`${OPENWRT_PACKAGE_TMP}/*.img`);
-        util.debug(`The img count:${files.length}`)
-        if (files.length > 0) {
-            await util.copy(path.join(UPDATE_FILE_PAHT, UPDATE_FILE_NAME), `${packageOptions.out}/${UPDATE_FILE_NAME}`)
-            await Promise.all(files.map(async item => {
-                await exec.exec(`sudo gzip ${item}`);
-                let basename = path.basename(item).replace('.img', '');
-                if (!util.isNull(packageOptions.sub_name)) {
-                    await io.mv(`${item}.gz`, path.join(packageOptions.out, `${basename}-${packageOptions.sub_name}.img.gz`));
-                }else{
-                    await io.mv(`${item}.gz`, path.join(packageOptions.out, `${basename}.img.gz`));
-                }
-            }));
-        }
     }));
+
+    let files = await util.getFiles(`${OPENWRT_PACKAGE_TMP}/*.img`);
+    util.debug(`The img count:${files.length}`)
+    if (files.length > 0) {
+        await util.copy(path.join(UPDATE_FILE_PAHT, UPDATE_FILE_NAME), `${packageOptions.out}/${UPDATE_FILE_NAME}`)
+        await Promise.all(files.map(async item => {
+            await exec.exec(`sudo gzip ${item}`);
+            let basename = path.basename(item).replace('.img', '');
+            if (!util.isNull(packageOptions.sub_name)) {
+                await io.mv(`${item}.gz`, path.join(packageOptions.out, `${basename}-${packageOptions.sub_name}.img.gz`));
+            } else {
+                await io.mv(`${item}.gz`, path.join(packageOptions.out, `${basename}.img.gz`));
+            }
+        }));
+    }
+
     util.debug("packaged.")
     await clear();
     core.setOutput("status", true);
