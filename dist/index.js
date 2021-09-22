@@ -8239,7 +8239,7 @@ function create_make_env(options, file) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    make_env = "WHOAMI=\"" + options.whoami + "\"\nOPENWRT_VER=\"" + options.openwrt_version + "\"\nKERNEL_VERSION=\"" + options.kernel_version + "\"\nKERNEL_PKG_HOME=\"/opt/kernel\"\nSFE_FLAG=0\nFLOWOFFLOAD_FLAG=1\nENABLE_WIFI_K504=1\nENABLE_WIFI_K510=1";
+                    make_env = "WHOAMI=\"" + options.whoami + "\"\nOPENWRT_VER=\"" + options.openwrt_version + "\"\nKERNEL_VERSION=\"" + options.kernel_version + "\"\nKERNEL_PKG_HOME=\"/opt/kernel\"\nfunction check_k510() {\n    K_VER=$(echo \"$KERNEL_VERSION\" | cut -d '.' -f1)\n    K_MAJ=$(echo \"$KERNEL_VERSION\" | cut -d '.' -f2)\n\n    if [ $K_VER -eq 5 ];then\n        if [ $K_MAJ -ge 10 ];then\n            K510=1\n        else\n\t    K510=0\n        fi\n    elif [ $K_VER -gt 5 ];then\n        K510=1\n    else\n        K510=0\n    fi\n    export K510\n}\n\ncheck_k510\nENABLE_WIFI_K504=1\nENABLE_WIFI_K510=1\nSW_FLOWOFFLOAD=1\nHW_FLOWOFFLOAD=0\nSFE_FLOW=1\nif [ $SW_FLOWOFFLOAD -eq 1 ] || [ $K510 -eq 1 ];then\n    SFE_FLOW=0\nfi";
                     util.debug(make_env);
                     return [4 /*yield*/, util.writeFile(file, make_env)];
                 case 1:
