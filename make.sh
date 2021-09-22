@@ -113,10 +113,33 @@ WHOAMI="${WHOAMI}"
 OPENWRT_VER="${OPENWRT_VERSION}"
 KERNEL_VERSION="${KERNEL_VERSION}"
 KERNEL_PKG_HOME="/opt/kernel"
-SFE_FLAG=0
-FLOWOFFLOAD_FLAG=1
+function check_k510() {
+    K_VER=$(echo "$KERNEL_VERSION" | cut -d '.' -f1)
+    K_MAJ=$(echo "$KERNEL_VERSION" | cut -d '.' -f2)
+
+    if [ $K_VER -eq 5 ];then
+        if [ $K_MAJ -ge 10 ];then
+            K510=1
+        else
+	    K510=0
+        fi
+    elif [ $K_VER -gt 5 ];then
+        K510=1
+    else
+        K510=0
+    fi
+    export K510
+}
+
+check_k510
 ENABLE_WIFI_K504=1
 ENABLE_WIFI_K510=1
+SW_FLOWOFFLOAD=1
+HW_FLOWOFFLOAD=0
+SFE_FLOW=1
+if [ $SW_FLOWOFFLOAD -eq 1 ] || [ $K510 -eq 1 ];then
+    SFE_FLOW=0
+fi
 EOF
 }
 
