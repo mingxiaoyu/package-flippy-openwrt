@@ -98,9 +98,9 @@ export async function getOpenwrtver(filePath: string) {
 
 }
 export async function create_make_env(options: PackageOptions, file: string) {
-    let make_env = `WHOAMI="${options.whoami}"
-OPENWRT_VER="${options.openwrt_version}"
-KERNEL_VERSION="${options.kernel_version}"
+    let make_env = `WHOAMI="${options.whoami.trim()}"
+OPENWRT_VER="${options.openwrt_version.trim()}"
+KERNEL_VERSION="${options.kernel_version.trim()}"
 KERNEL_PKG_HOME="/opt/kernel"
 function check_k510() {
     K_VER=$(echo "$KERNEL_VERSION" | cut -d '.' -f1)
