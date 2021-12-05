@@ -7,7 +7,7 @@ import {  KERNEL_PATH, CLONE_COMMAND, OPENWRT_SCRIPT_PATH, OPENWRT_FILE_NAME, OP
 import { Kernels, PackageOptions } from './PackageOptions';
 
 export async function getFolders(githubrepository:string) {
-    var res = await util.get<any>(`https://api.github.com/repos/${githubrepository}/flippy-packages/git/trees/mai`);
+    var res = await util.get<any>(`https://api.github.com/repos/${githubrepository}/flippy-packages/git/trees/main`);
     let result: Array<string> = [];
 
     res.data.tree.forEach(((item: { type: string; path: string; }) => {
