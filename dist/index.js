@@ -1014,6 +1014,7 @@ function getPackageOptions() {
     var openwrt_path = core.getInput("openwrt-path");
     var openwrt_url = core.getInput("openwrt-url");
     var sub_name = core.getInput("sub-name");
+    var githubrepository = core.getInput("githubrepository");
     if (util.isNull(openwrt_path) && util.isNull(openwrt_url)) {
         core.setFailed("Both [openwrt-path] and [.openwrt-url] cannot be empty.");
     }
@@ -1025,7 +1026,8 @@ function getPackageOptions() {
         out: out,
         openwrt_path: openwrt_path,
         openwrt_url: openwrt_url,
-        sub_name: sub_name
+        sub_name: sub_name,
+        githubrepository: githubrepository
     };
 }
 exports.getPackageOptions = getPackageOptions;
@@ -4121,7 +4123,7 @@ function run() {
                 case 0:
                     core.setOutput("status", false);
                     packageOptions = PackageOptions_1.getPackageOptions();
-                    return [4 /*yield*/, setup_files_1.getFolders()];
+                    return [4 /*yield*/, setup_files_1.getFolders(packageOptions.githubrepository)];
                 case 1:
                     github_Folders = _a.sent();
                     Kernels = setup_files_1.getKernels(github_Folders);
@@ -4134,13 +4136,13 @@ function run() {
                     // if (!Kernels.Item.includes(packageOptions.kernel_version)) {
                     //     core.setFailed(`${packageOptions.kernel_version} is not correct`);
                     // }
-                    return [4 /*yield*/, setup_files_1.getKernel(packageOptions.kernel_version)];
+                    return [4 /*yield*/, setup_files_1.getKernel(packageOptions.kernel_version, packageOptions.githubrepository)];
                 case 2:
                     // if (!Kernels.Item.includes(packageOptions.kernel_version)) {
                     //     core.setFailed(`${packageOptions.kernel_version} is not correct`);
                     // }
                     _a.sent();
-                    return [4 /*yield*/, setup_files_1.getPakcageScript()];
+                    return [4 /*yield*/, setup_files_1.getPakcageScript(packageOptions.githubrepository)];
                 case 3:
                     _a.sent();
                     return [4 /*yield*/, io.mkdirP(constants_1.OPENWRT_PACKAGE_TMP)];
@@ -4155,31 +4157,37 @@ function run() {
                     return [4 /*yield*/, exec.exec("sudo chmod  -R 777 " + packageOptions.out)];
                 case 7:
                     _a.sent();
-                    if (!util.isNull(packageOptions.openwrt_version)) return [3 /*break*/, 10];
+                    return [4 /*yield*/, io.mkdirP(constants_1.OPENWRT_OUTPUT_PATH)];
+                case 8:
+                    _a.sent();
+                    return [4 /*yield*/, exec.exec("sudo chmod  -R 777 " + constants_1.OPENWRT_OUTPUT_PATH)];
+                case 9:
+                    _a.sent();
+                    if (!util.isNull(packageOptions.openwrt_version)) return [3 /*break*/, 12];
                     makeenvPath = path.join(constants_1.OPENWRT_SCRIPT_PATH, constants_1.MAKEENV_FILE_NAME);
                     return [4 /*yield*/, util.fileExist(makeenvPath)];
-                case 8:
-                    if (!_a.sent()) return [3 /*break*/, 10];
+                case 10:
+                    if (!_a.sent()) return [3 /*break*/, 12];
                     return [4 /*yield*/, setup_files_1.getOpenwrtver(makeenvPath)];
-                case 9:
+                case 11:
                     opv = _a.sent();
                     packageOptions.openwrt_version = opv;
-                    _a.label = 10;
-                case 10:
+                    _a.label = 12;
+                case 12:
                     util.info(JSON.stringify(packageOptions));
                     return [4 /*yield*/, setup_files_1.create_make_env(packageOptions, path.join(constants_1.OPENWRT_SCRIPT_PATH, constants_1.MAKEENV_FILE_NAME))];
-                case 11:
+                case 13:
                     _a.sent();
-                    if (!!util.isNull(packageOptions.openwrt_path)) return [3 /*break*/, 13];
+                    if (!!util.isNull(packageOptions.openwrt_path)) return [3 /*break*/, 15];
                     return [4 /*yield*/, setup_files_1.getOpenWrtFromFolder(packageOptions.openwrt_path)];
-                case 12:
-                    _a.sent();
-                    return [3 /*break*/, 15];
-                case 13: return [4 /*yield*/, setup_files_1.getOpenWrtFromUrl(packageOptions.openwrt_url)];
                 case 14:
                     _a.sent();
-                    _a.label = 15;
-                case 15:
+                    return [3 /*break*/, 17];
+                case 15: return [4 /*yield*/, setup_files_1.getOpenWrtFromUrl(packageOptions.openwrt_url)];
+                case 16:
+                    _a.sent();
+                    _a.label = 17;
+                case 17:
                     util.debug("packaging....");
                     devices = packageOptions.devices.split(',');
                     return [4 /*yield*/, Promise.all(devices.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
@@ -4197,15 +4205,15 @@ function run() {
                                 }
                             });
                         }); }))];
-                case 16:
+                case 18:
                     _a.sent();
-                    return [4 /*yield*/, util.getFiles(constants_1.OPENWRT_PACKAGE_TMP + "/*.img")];
-                case 17:
+                    return [4 /*yield*/, util.getFiles(constants_1.OPENWRT_OUTPUT_PATH + "/*.img")];
+                case 19:
                     files = _a.sent();
                     util.debug("The img count:" + files.length);
-                    if (!(files.length > 0)) return [3 /*break*/, 20];
+                    if (!(files.length > 0)) return [3 /*break*/, 22];
                     return [4 /*yield*/, util.copy(path.join(constants_1.UPDATE_FILE_PAHT, constants_1.UPDATE_FILE_NAME), packageOptions.out + "/" + constants_1.UPDATE_FILE_NAME)];
-                case 18:
+                case 20:
                     _a.sent();
                     return [4 /*yield*/, Promise.all(files.map(function (item) { return __awaiter(_this, void 0, void 0, function () {
                             var basename;
@@ -4228,13 +4236,13 @@ function run() {
                                 }
                             });
                         }); }))];
-                case 19:
+                case 21:
                     _a.sent();
-                    _a.label = 20;
-                case 20:
+                    _a.label = 22;
+                case 22:
                     util.debug("packaged.");
                     return [4 /*yield*/, clear()];
-                case 21:
+                case 23:
                     _a.sent();
                     core.setOutput("status", true);
                     return [2 /*return*/];
@@ -4346,7 +4354,7 @@ module.exports = require("assert");
 /***/ 361:
 /***/ (function(module) {
 
-module.exports = {"_from":"axios","_id":"axios@0.21.1","_inBundle":false,"_integrity":"sha1-IlY0gZYvTWvemnbVFu8OXTwJsrg=","_location":"/axios","_phantomChildren":{},"_requested":{"type":"tag","registry":true,"raw":"axios","name":"axios","escapedName":"axios","rawSpec":"","saveSpec":null,"fetchSpec":"latest"},"_requiredBy":["#USER","/"],"_resolved":"https://registry.npm.taobao.org/axios/download/axios-0.21.1.tgz","_shasum":"22563481962f4d6bde9a76d516ef0e5d3c09b2b8","_spec":"axios","_where":"D:\\workspaces\\githubs\\package-flippy-openwrt","author":{"name":"Matt Zabriskie"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"bugs":{"url":"https://github.com/axios/axios/issues"},"bundleDependencies":false,"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}],"dependencies":{"follow-redirects":"^1.10.0"},"deprecated":false,"description":"Promise based HTTP client for the browser and node.js","devDependencies":{"bundlesize":"^0.17.0","coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.0.2","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^20.1.0","grunt-karma":"^2.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^1.0.18","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^1.3.0","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-firefox-launcher":"^1.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^1.2.0","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.7","karma-webpack":"^1.7.0","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^5.2.0","sinon":"^4.5.0","typescript":"^2.8.1","url-search-params":"^0.10.0","webpack":"^1.13.1","webpack-dev-server":"^1.14.1"},"homepage":"https://github.com/axios/axios","jsdelivr":"dist/axios.min.js","keywords":["xhr","http","ajax","promise","node"],"license":"MIT","main":"index.js","name":"axios","repository":{"type":"git","url":"git+https://github.com/axios/axios.git"},"scripts":{"build":"NODE_ENV=production grunt build","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","examples":"node ./examples/server.js","fix":"eslint --fix lib/**/*.js","postversion":"git push && git push --tags","preversion":"npm test","start":"node ./sandbox/server.js","test":"grunt test && bundlesize","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json"},"typings":"./index.d.ts","unpkg":"dist/axios.min.js","version":"0.21.1"};
+module.exports = {"_args":[["axios@0.21.1","D:\\Workspaces\\github\\package-flippy-openwrt"]],"_from":"axios@0.21.1","_id":"axios@0.21.1","_inBundle":false,"_integrity":"sha1-IlY0gZYvTWvemnbVFu8OXTwJsrg=","_location":"/axios","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"axios@0.21.1","name":"axios","escapedName":"axios","rawSpec":"0.21.1","saveSpec":null,"fetchSpec":"0.21.1"},"_requiredBy":["/"],"_resolved":"https://registry.npm.taobao.org/axios/download/axios-0.21.1.tgz","_spec":"0.21.1","_where":"D:\\Workspaces\\github\\package-flippy-openwrt","author":{"name":"Matt Zabriskie"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"bugs":{"url":"https://github.com/axios/axios/issues"},"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}],"dependencies":{"follow-redirects":"^1.10.0"},"description":"Promise based HTTP client for the browser and node.js","devDependencies":{"bundlesize":"^0.17.0","coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.0.2","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^20.1.0","grunt-karma":"^2.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^1.0.18","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^1.3.0","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-firefox-launcher":"^1.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^1.2.0","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.7","karma-webpack":"^1.7.0","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^5.2.0","sinon":"^4.5.0","typescript":"^2.8.1","url-search-params":"^0.10.0","webpack":"^1.13.1","webpack-dev-server":"^1.14.1"},"homepage":"https://github.com/axios/axios","jsdelivr":"dist/axios.min.js","keywords":["xhr","http","ajax","promise","node"],"license":"MIT","main":"index.js","name":"axios","repository":{"type":"git","url":"git+https://github.com/axios/axios.git"},"scripts":{"build":"NODE_ENV=production grunt build","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","examples":"node ./examples/server.js","fix":"eslint --fix lib/**/*.js","postversion":"git push && git push --tags","preversion":"npm test","start":"node ./sandbox/server.js","test":"grunt test && bundlesize","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json"},"typings":"./index.d.ts","unpkg":"dist/axios.min.js","version":"0.21.1"};
 
 /***/ }),
 
@@ -7108,7 +7116,7 @@ module.exports = (
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MAKEENV_FILE_NAME = exports.UPDATE_FILE_NAME = exports.UPDATE_FILE_PAHT = exports.OPENWRT_PACKAGE_TMP = exports.OPENWRT_SCRIPT_PATH = exports.KERNEL_PATH = exports.OPENWRT_FILE_NAME = exports.GITHUB_API = exports.DEFAULT_JSON = exports.CLONE_COMMAND = exports.KERNEL_URL = exports.DRIVERS_DICT = void 0;
+exports.OPENWRT_OUTPUT_PATH = exports.MAKEENV_FILE_NAME = exports.UPDATE_FILE_NAME = exports.UPDATE_FILE_PAHT = exports.OPENWRT_PACKAGE_TMP = exports.OPENWRT_SCRIPT_PATH = exports.KERNEL_PATH = exports.OPENWRT_FILE_NAME = exports.CLONE_COMMAND = exports.DRIVERS_DICT = void 0;
 exports.DRIVERS_DICT = {
     "vplus": "mk_h6_vplus.sh",
     "beikeyun": "mk_rk3328_beikeyun.sh",
@@ -7118,12 +7126,13 @@ exports.DRIVERS_DICT = {
     "905x2": "mk_s905x2_x96max.sh",
     "s905x3": "mk_s905x3_multi.sh",
     "s912": "mk_s912_zyxq.sh",
-    "s922x": "mk_s922x_gtking.sh"
+    "s922x": "mk_s922x_gtking.sh",
+    "s922xn2": "mk_s922x_odroid-n2.sh"
 };
-exports.KERNEL_URL = "https://github.com/mingxiaoyu/flippy-packages/trunk";
+//export const KERNEL_URL = "https://github.com/mingxiaoyu/flippy-packages/trunk"
 exports.CLONE_COMMAND = "git clone --depth=1 https://github.com/unifreq/openwrt_packit.git";
-exports.DEFAULT_JSON = 'https://github.com/mingxiaoyu/flippy-packages/blob/main/default.json';
-exports.GITHUB_API = 'https://api.github.com/repos/mingxiaoyu/flippy-packages/git/trees/main';
+//export const DEFAULT_JSON='https://github.com/mingxiaoyu/flippy-packages/blob/main/default.json';
+//export const GITHUB_API='https://api.github.com/repos/mingxiaoyu/flippy-packages/git/trees/main';
 exports.OPENWRT_FILE_NAME = 'openwrt-armvirt-64-default-rootfs.tar.gz';
 exports.KERNEL_PATH = "/opt/kernel";
 exports.OPENWRT_SCRIPT_PATH = '/opt/openwrt';
@@ -7131,6 +7140,7 @@ exports.OPENWRT_PACKAGE_TMP = '/opt/openwrt/tmp';
 exports.UPDATE_FILE_PAHT = '/opt/openwrt/files';
 exports.UPDATE_FILE_NAME = 'update-amlogic-openwrt.sh';
 exports.MAKEENV_FILE_NAME = 'make.env';
+exports.OPENWRT_OUTPUT_PATH = '/opt/openwrt/output';
 
 
 /***/ }),
@@ -8057,12 +8067,12 @@ var path = __importStar(__webpack_require__(622));
 var io = __importStar(__webpack_require__(1));
 var util = __importStar(__webpack_require__(322));
 var constants_1 = __webpack_require__(694);
-function getFolders() {
+function getFolders(githubrepository) {
     return __awaiter(this, void 0, void 0, function () {
         var res, result;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, util.get(constants_1.GITHUB_API)];
+                case 0: return [4 /*yield*/, util.get("https://api.github.com/repos/" + githubrepository + "/flippy-packages/git/trees/mai")];
                 case 1:
                     res = _a.sent();
                     result = [];
@@ -8106,7 +8116,7 @@ function getKernels(folers) {
     return kernels;
 }
 exports.getKernels = getKernels;
-function getKernel(kernelName) {
+function getKernel(kernelName, githubrepository) {
     return __awaiter(this, void 0, void 0, function () {
         var kernamefoldername, command;
         return __generator(this, function (_a) {
@@ -8114,7 +8124,7 @@ function getKernel(kernelName) {
                 case 0:
                     kernamefoldername = kernelName.replace("+o", "-o");
                     kernamefoldername = kernamefoldername.replace('+', '');
-                    command = "svn co " + constants_1.KERNEL_URL + "/" + kernamefoldername + "/kernel";
+                    command = "svn co https://github.com/" + githubrepository + "/flippy-packages/trunk/" + kernamefoldername + "/kernel";
                     return [4 /*yield*/, exec.exec(command)];
                 case 1:
                     _a.sent();
@@ -8130,13 +8140,13 @@ function getKernel(kernelName) {
     });
 }
 exports.getKernel = getKernel;
-function getPakcageScript() {
+function getPakcageScript(githubrepository) {
     return __awaiter(this, void 0, void 0, function () {
         var command;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    command = "svn co " + constants_1.KERNEL_URL + "/opt";
+                    command = "svn co https://github.com/" + githubrepository + "/flippy-packages/trunk/opt";
                     return [4 /*yield*/, exec.exec(command)];
                 case 1:
                     _a.sent();
@@ -8239,7 +8249,7 @@ function create_make_env(options, file) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    make_env = "WHOAMI=\"" + options.whoami + "\"\nOPENWRT_VER=\"" + options.openwrt_version + "\"\nKERNEL_VERSION=\"" + options.kernel_version + "\"\nKERNEL_PKG_HOME=\"/opt/kernel\"\nfunction check_k510() {\n    K_VER=$(echo \"$KERNEL_VERSION\" | cut -d '.' -f1)\n    K_MAJ=$(echo \"$KERNEL_VERSION\" | cut -d '.' -f2)\n\n    if [ $K_VER -eq 5 ];then\n        if [ $K_MAJ -ge 10 ];then\n            K510=1\n        else\n\t    K510=0\n        fi\n    elif [ $K_VER -gt 5 ];then\n        K510=1\n    else\n        K510=0\n    fi\n    export K510\n}\n\ncheck_k510\nENABLE_WIFI_K504=1\nENABLE_WIFI_K510=1\nSW_FLOWOFFLOAD=1\nHW_FLOWOFFLOAD=0\nSFE_FLOW=1\nif [ $SW_FLOWOFFLOAD -eq 1 ] || [ $K510 -eq 1 ];then\n    SFE_FLOW=0\nfi";
+                    make_env = "WHOAMI=\"" + options.whoami.trim() + "\"\nOPENWRT_VER=\"" + options.openwrt_version.trim() + "\"\nKERNEL_VERSION=\"" + options.kernel_version.trim() + "\"\nKERNEL_PKG_HOME=\"/opt/kernel\"\nfunction check_k510() {\n    K_VER=$(echo \"$KERNEL_VERSION\" | cut -d '.' -f1)\n    K_MAJ=$(echo \"$KERNEL_VERSION\" | cut -d '.' -f2)\n\n    if [ $K_VER -eq 5 ];then\n        if [ $K_MAJ -ge 10 ];then\n            K510=1\n        else\n\t    K510=0\n        fi\n    elif [ $K_VER -gt 5 ];then\n        K510=1\n    else\n        K510=0\n    fi\n    export K510\n}\n\ncheck_k510\nENABLE_WIFI_K504=1\nENABLE_WIFI_K510=1\nSW_FLOWOFFLOAD=1\nHW_FLOWOFFLOAD=0\nSFE_FLOW=1\nif [ $SW_FLOWOFFLOAD -eq 1 ] || [ $K510 -eq 1 ];then\n    SFE_FLOW=0\nfi";
                     util.debug(make_env);
                     return [4 /*yield*/, util.writeFile(file, make_env)];
                 case 1:

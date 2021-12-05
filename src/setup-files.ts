@@ -3,11 +3,11 @@ import * as core from '@actions/core';
 import * as path from 'path';
 import * as io from '@actions/io';
 import * as util from './util';
-import { KERNEL_URL, KERNEL_PATH, CLONE_COMMAND, OPENWRT_SCRIPT_PATH, OPENWRT_FILE_NAME, OPENWRT_PACKAGE_TMP, DEFAULT_JSON, GITHUB_API } from './constants';
+import {  KERNEL_PATH, CLONE_COMMAND, OPENWRT_SCRIPT_PATH, OPENWRT_FILE_NAME, OPENWRT_PACKAGE_TMP } from './constants';
 import { Kernels, PackageOptions } from './PackageOptions';
 
-export async function getFolders() {
-    var res = await util.get<any>(GITHUB_API);
+export async function getFolders(githubrepository:string) {
+    var res = await util.get<any>(`https://api.github.com/repos/${githubrepository}/flippy-packages/git/trees/mai`);
     let result: Array<string> = [];
 
     res.data.tree.forEach(((item: { type: string; path: string; }) => {
@@ -46,17 +46,17 @@ export function getKernels(folers: string[]) {
     return kernels;
 }
 
-export async function getKernel(kernelName: string) {
+export async function getKernel(kernelName: string,githubrepository:string) {
     let kernamefoldername = kernelName.replace("+o", "-o");
     kernamefoldername = kernamefoldername.replace('+', '');
-    let command = `svn co ${KERNEL_URL}/${kernamefoldername}/kernel`;
+    let command = `svn co https://github.com/${githubrepository}/flippy-packages/trunk/${kernamefoldername}/kernel`;
     await exec.exec(command);
     await util.copy('kernel', KERNEL_PATH);
     await io.rmRF('kernel');
 }
 
-export async function getPakcageScript() {
-    let command = `svn co ${KERNEL_URL}/opt`;
+export async function getPakcageScript(githubrepository:string) {
+    let command = `svn co https://github.com/${githubrepository}/flippy-packages/trunk/opt`;
     await exec.exec(command);
     await util.copy("opt/openwrt", OPENWRT_SCRIPT_PATH);
     await io.rmRF('opt/openwrt');
