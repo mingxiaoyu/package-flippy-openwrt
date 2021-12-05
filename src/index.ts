@@ -4,7 +4,7 @@ import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as util from './util';
 
-import { DRIVERS_DICT, KERNEL_PATH, MAKEENV_FILE_NAME, OPENWRT_PACKAGE_TMP, OPENWRT_SCRIPT_PATH, UPDATE_FILE_NAME, UPDATE_FILE_PAHT } from "./constants";
+import { DRIVERS_DICT, KERNEL_PATH, MAKEENV_FILE_NAME, OPENWRT_OUTPUT_PATH, OPENWRT_PACKAGE_TMP, OPENWRT_SCRIPT_PATH, UPDATE_FILE_NAME, UPDATE_FILE_PAHT } from "./constants";
 import { getPackageOptions } from "./PackageOptions";
 import { create_make_env, getFolders, getKernel, getKernels, getOpenWrtFromFolder, getOpenWrtFromUrl, getOpenwrtver, getPakcageScript, getPakcageScriptFromFlippy } from "./setup-files";
 
@@ -20,7 +20,7 @@ async function run() {
     core.setOutput("status", false);
     let packageOptions = getPackageOptions();
 
-    let github_Folders = await getFolders();
+    let github_Folders = await getFolders(packageOptions.githubrepository);
     let Kernels = getKernels(github_Folders);
 
     if (util.isNull(packageOptions.kernel_version) || packageOptions.kernel_version.toLowerCase() === 'latest') {
@@ -34,14 +34,18 @@ async function run() {
     //     core.setFailed(`${packageOptions.kernel_version} is not correct`);
     // }
 
-    await getKernel(packageOptions.kernel_version);
+    await getKernel(packageOptions.kernel_version,packageOptions.githubrepository);
 
-    await getPakcageScript();
+    await getPakcageScript(packageOptions.githubrepository);
 
     await io.mkdirP(OPENWRT_PACKAGE_TMP);
     await exec.exec(`sudo chmod  -R 777 ${OPENWRT_SCRIPT_PATH}`);
+
     await exec.exec(`sudo mkdir -p ${packageOptions.out}`);
     await exec.exec(`sudo chmod  -R 777 ${packageOptions.out}`);
+
+    await io.mkdirP(OPENWRT_OUTPUT_PATH);
+    await exec.exec(`sudo chmod  -R 777 ${OPENWRT_OUTPUT_PATH}`);
 
     if (util.isNull(packageOptions.openwrt_version)) {
         let makeenvPath = path.join(OPENWRT_SCRIPT_PATH, MAKEENV_FILE_NAME);
@@ -67,7 +71,7 @@ async function run() {
         await exec.exec(`sudo ./${command}`, [], { cwd: OPENWRT_SCRIPT_PATH });
     }));
 
-    let files = await util.getFiles(`${OPENWRT_PACKAGE_TMP}/*.img`);
+    let files = await util.getFiles(`${OPENWRT_OUTPUT_PATH}/*.img`);
     util.debug(`The img count:${files.length}`)
     if (files.length > 0) {
         await util.copy(path.join(UPDATE_FILE_PAHT, UPDATE_FILE_NAME), `${packageOptions.out}/${UPDATE_FILE_NAME}`)

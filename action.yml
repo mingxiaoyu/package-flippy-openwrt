@@ -30,6 +30,10 @@ inputs:
   sub-name:
     description: 'add the sub name in file: xxxx-xx-{sub-name}.img.gz'
     required: false
+  githubrepository:
+    description: 'the repository of the openwrt core'
+    required: false
+    default: mingxiaoyu
 outputs:
   status:
     description: 'The status of the action'

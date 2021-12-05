@@ -62,7 +62,7 @@ describe('setup files test', () => {
         let spycopy = jest.spyOn(util, 'copy');
         spycopy.mockImplementation(async () => { });
 
-        await getKernel('5.4.123-flippy-59+o');
+        await getKernel('5.4.123-flippy-59+o',"mingxiaoyu");
         expect(spyexec).toHaveBeenCalled();
         let exist = fs.existsSync(kernelPath)
         expect(exist).toEqual(true);

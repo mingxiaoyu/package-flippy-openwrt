@@ -27,6 +27,7 @@ export function getPackageOptions() {
     const openwrt_path = core.getInput("openwrt-path");
     const openwrt_url = core.getInput("openwrt-url");
     const sub_name = core.getInput("sub-name");
+    const githubrepository = core.getInput("githubrepository");
 
     if (util.isNull(openwrt_path) && util.isNull(openwrt_url)) {
         core.setFailed(`Both [openwrt-path] and [.openwrt-url] cannot be empty.`);
@@ -39,6 +40,7 @@ export function getPackageOptions() {
         out,
         openwrt_path,
         openwrt_url,
-        sub_name
+        sub_name,
+        githubrepository
     }
 }
