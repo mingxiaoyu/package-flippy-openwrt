@@ -19,6 +19,8 @@ export async function getPackageCommand(diverName: string) {
 async function run() {
     core.setOutput("status", false);
     let packageOptions = getPackageOptions();
+    
+    util.info(JSON.stringify(packageOptions));
 
     let github_Folders = await getFolders(packageOptions.githubrepository);
     let Kernels = getKernels(github_Folders);

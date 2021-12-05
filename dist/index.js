@@ -4123,6 +4123,7 @@ function run() {
                 case 0:
                     core.setOutput("status", false);
                     packageOptions = PackageOptions_1.getPackageOptions();
+                    util.info(JSON.stringify(packageOptions));
                     return [4 /*yield*/, setup_files_1.getFolders(packageOptions.githubrepository)];
                 case 1:
                     github_Folders = _a.sent();
@@ -8072,7 +8073,7 @@ function getFolders(githubrepository) {
         var res, result;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, util.get("https://api.github.com/repos/" + githubrepository + "/flippy-packages/git/trees/mai")];
+                case 0: return [4 /*yield*/, util.get("https://api.github.com/repos/" + githubrepository + "/flippy-packages/git/trees/main")];
                 case 1:
                     res = _a.sent();
                     result = [];
